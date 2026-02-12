@@ -14,32 +14,60 @@ export default function LeadView({ teamId, profile }: { teamId: string, profile:
   }, [teamId, profile]);
 
   const fetchRequests = async () => {
+    setLoading(true);
     let query = supabase
       .from('early_requests')
       .select(`
         *,
-        profiles:user_id (full_name, role, team_id),
+        profiles:user_id (id, full_name, role, team_id),
         teams:team_id (name)
       `);
 
     if (profile.role === 'MANAGER') {
-      query = query.eq('status', 'PENDING_MANAGER');
-    } else {
-      query = query.eq('team_id', teamId).eq('status', 'PENDING');
-    }
+      /**
+       * LÓGICA PARA MANAGER:
+       * Traemos solicitudes PENDING (donde buscaremos a los Leads) 
+       * y PENDING_MANAGER (validadas por Leads).
+       */
+      const { data, error } = await query
+        .or('status.eq.PENDING,status.eq.PENDING_MANAGER');
 
-    const { data, error } = await query;
-    if (!error) setRequests(data || []);
+      if (!error && data) {
+        // Filtramos para que la Manager vea:
+        // 1. Lo que ya validó un Lead (PENDING_MANAGER)
+        // 2. Lo que envió un Lead directamente (PENDING + role LEAD)
+        const managerData = data.filter(req => 
+          req.status === 'PENDING_MANAGER' || 
+          (req.status === 'PENDING' && req.profiles?.role === 'LEAD')
+        );
+        setRequests(managerData);
+      }
+    } else {
+      /**
+       * LÓGICA PARA LEAD:
+       * Solo ve solicitudes de su equipo que estén PENDING y que NO sean la suya.
+       */
+      const { data, error } = await query
+        .eq('team_id', teamId)
+        .eq('status', 'PENDING')
+        .neq('user_id', profile.id);
+        
+      if (!error) setRequests(data || []);
+    }
     setLoading(false);
   };
 
   const handleAction = async (requestId: string, action: 'APPROVE' | 'REJECT') => {
     let newStatus;
     
+    const targetRequest = requests.find(r => r.id === requestId);
+    const isLeadRequest = targetRequest?.profiles?.role === 'LEAD';
+
     if (action === 'REJECT') {
       newStatus = 'REJECTED';
     } else {
-      newStatus = profile.role === 'MANAGER' ? 'APPROVED' : 'PENDING_MANAGER';
+      // Si es Manager o si es una solicitud de un Lead, pasa a APPROVED
+      newStatus = (profile.role === 'MANAGER' || isLeadRequest) ? 'APPROVED' : 'PENDING_MANAGER';
     }
 
     const { error } = await supabase
@@ -83,11 +111,8 @@ export default function LeadView({ teamId, profile }: { teamId: string, profile:
         ) : (
           <div className="grid grid-cols-1 gap-4">
             {requests.map((req) => {
-              // --- CORRECCIÓN DE FECHA ---
-              // Separamos manualmente YYYY-MM-DD para evitar desfase horario
               const [year, month, day] = req.friday_date.split('-').map(Number);
               const adjustedDate = new Date(year, month - 1, day);
-              // ---------------------------
 
               return (
                 <motion.div
@@ -104,15 +129,19 @@ export default function LeadView({ teamId, profile }: { teamId: string, profile:
                         <User size={24} />
                       </div>
                       <div>
-                        <h4 className="text-white font-black uppercase tracking-tight">{req.profiles?.full_name}</h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-white font-black uppercase tracking-tight">{req.profiles?.full_name}</h4>
+                          {req.profiles?.role === 'LEAD' && (
+                            <span className="text-[7px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/20 font-bold">LEAD</span>
+                          )}
+                        </div>
                         <div className="flex flex-col gap-1 mt-1">
                           <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">
-                            {/* Mostramos la fecha ajustada */}
                             Fecha: {adjustedDate.toLocaleDateString('es-ES', { month: 'long', day: 'numeric' })}
                           </p>
                           {profile.role === 'MANAGER' && (
                             <span className="text-[8px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 w-fit font-bold uppercase">
-                              VALIDADO POR: {req.teams?.name || 'LEAD ASIGNADO'}
+                              {req.profiles?.role === 'LEAD' ? 'SOLICITUD DIRECTA' : `VALIDADO POR: ${req.teams?.name || 'LEAD'}`}
                             </span>
                           )}
                         </div>

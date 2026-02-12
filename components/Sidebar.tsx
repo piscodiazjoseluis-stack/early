@@ -1,13 +1,69 @@
 'use client';
-import { useState } from 'react';
-import { LayoutDashboard, ClipboardList, Users, Settings, LogOut, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { LayoutDashboard, ClipboardList, Users, LogOut, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { createClient } from '@/lib/supabase/client';
 
-export default function Sidebar({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) {
+export default function Sidebar({ activeTab, setActiveTab, profile }: { activeTab: string, setActiveTab: (tab: string) => void, profile: any }) {
+  const [pendingCount, setPendingCount] = useState(0);
+  const supabase = createClient();
+
+  useEffect(() => {
+    if (!profile) return;
+
+    const fetchCounts = async () => {
+      // 1. Traemos los datos incluyendo el perfil para validar roles
+      const { data, error }: any = await supabase
+        .from('early_requests')
+        .select(`
+          status,
+          user_id,
+          team_id,
+          profiles:user_id ( role )
+        `)
+        .or('status.eq.PENDING,status.eq.PENDING_MANAGER');
+
+      if (error) {
+        console.error("Error Supabase:", error.message);
+        return;
+      }
+
+      let count = 0;
+      if (profile.role === 'MANAGER') {
+        // Filtro para Maria Luisa: ve solicitudes de LEADS o las ya validadas como PENDING_MANAGER
+        count = data?.filter((req: any) => {
+          const role = Array.isArray(req.profiles) ? req.profiles[0]?.role : req.profiles?.role;
+          return req.status === 'PENDING_MANAGER' || (req.status === 'PENDING' && role === 'LEAD');
+        }).length;
+      } else if (profile.role === 'LEAD') {
+        // Filtro para Leads: ven PENDING de su equipo que no sean suyas
+        count = data?.filter((req: any) => 
+          req.status === 'PENDING' && req.team_id === profile.team_id && req.user_id !== profile.id
+        ).length;
+      }
+      
+      setPendingCount(count || 0);
+    };
+
+    fetchCounts();
+
+    // Realtime: Ya que activaste los interruptores en Supabase, esto DEBE funcionar
+    const channel = supabase
+      .channel('sidebar-realtime')
+      .on('postgres_changes' as any, { event: '*', table: 'early_requests' }, () => fetchCounts())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [profile, supabase]);
+
   const menuItems = [
-    { id: 'dashboard', label: 'Mi Panel', icon: LayoutDashboard },
-    { id: 'requests', label: 'Solicitudes', icon: ClipboardList },
-    { id: 'team', label: 'Mi Equipo', icon: Users },
+    { id: 'dashboard', label: profile?.role === 'MANAGER' ? 'Dashboard Pro' : 'Mi Panel', icon: LayoutDashboard },
+    { id: 'history', label: 'Historial Global', icon: ClipboardList }, // Cambié el ID para que coincida con tu diseño
+    { 
+      id: 'team', // ESTE ID DEBE SER 'team' PARA QUE EL BADGE SE MUESTRE ABAJO
+      label: profile?.role === 'MANAGER' ? 'Gestión Solicitudes' : 'Gestión de Equipo', 
+      icon: Users,
+    },
   ];
 
   return (
@@ -28,22 +84,27 @@ export default function Sidebar({ activeTab, setActiveTab }: { activeTab: string
               activeTab === item.id ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
             }`}
           >
-            <item.icon size={22} />
+            <div className="relative">
+              <item.icon size={22} />
+              
+              {/* CORRECCIÓN: Si el ID es 'team' (Gestión Solicitudes), mostramos el badge */}
+              {item.id === 'team' && pendingCount > 0 && (
+                <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white ring-2 ring-slate-950 shadow-lg">
+                  {pendingCount}
+                </span>
+              )}
+            </div>
             <span className="hidden lg:block font-medium text-sm">{item.label}</span>
-            {activeTab === item.id && (
-              <motion.div layoutId="active" className="absolute left-0 w-1 h-6 bg-blue-500 rounded-r-full" />
-            )}
           </button>
         ))}
       </nav>
 
+      {/* Resto del diseño de salida... */}
       <div className="absolute bottom-8 w-full px-4">
-        <form action="/auth/signout" method="post">
           <button className="w-full flex items-center gap-4 p-4 rounded-2xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all">
             <LogOut size={22} />
-            <span className="hidden lg:block font-medium text-sm">Cerrar Enlace</span>
+            <span className="hidden lg:block font-medium text-sm">Cerrar Sesión</span>
           </button>
-        </form>
       </div>
     </div>
   );
