@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation'; // IMPORTANTE: Para la redirección
+import { useRouter } from 'next/navigation';
 import ViernesCalendar from '@/components/ViernesCalendar';
 import RequestList from '@/components/RequestList';
 import LeadView from '@/components/LeadView';
@@ -58,49 +58,77 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<any>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const router = useRouter(); // Hook para navegar
+  const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
     async function getInitialData() {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // CORRECCIÓN: Si no hay usuario, redirigir al login inmediatamente
       if (!user) {
         router.push('/login');
         return;
       }
 
-      if (user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*, teams(name)')
-          .eq('id', user.id)
-          .single();
-        
-        if (!profileData) {
-          router.push('/login');
-          return;
-        }
-
-        setProfile(profileData);
-        setActiveTab('analytics');
-
-        let query = supabase.from('early_requests').select('*', { count: 'exact', head: true });
-        if (profileData.role === 'MANAGER') {
-          query = query.eq('status', 'PENDING_MANAGER');
-        } else {
-          query = query.eq('team_id', profileData.team_id).eq('status', 'PENDING');
-        }
-        const { count } = await query;
-        setPendingCount(count || 0);
+      // 1. Obtener perfil completo
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*, teams(name)')
+        .eq('id', user.id)
+        .single();
+      
+      if (!profileData) {
+        router.push('/login');
+        return;
       }
+
+      setProfile(profileData);
+      setActiveTab('analytics');
+
+      // 2. FUNCIÓN DE CONTEO ROBUSTA CON ROLES
+      const fetchCounts = async (currentProfile: any) => {
+        let count = 0;
+        
+        const { data: requests } = await supabase
+          .from('early_requests')
+          .select(`status, user_id, team_id, profiles:user_id(role)`)
+          .or('status.eq.PENDING,status.eq.PENDING_MANAGER');
+
+        if (currentProfile.role === 'MANAGER') {
+          // Maria Luisa ve: PENDING_MANAGER (empleados) O PENDING (si el autor es LEAD)
+          count = requests?.filter((req: any) => {
+            const authorRole = Array.isArray(req.profiles) ? req.profiles[0]?.role : req.profiles?.role;
+            return req.status === 'PENDING_MANAGER' || (req.status === 'PENDING' && authorRole === 'LEAD');
+          }).length || 0;
+        } else if (currentProfile.role === 'LEAD') {
+          // Leads ven: PENDING de su equipo que no sean suyas
+          count = requests?.filter((req: any) => 
+            req.status === 'PENDING' && 
+            req.team_id === currentProfile.team_id && 
+            req.user_id !== currentProfile.id
+          ).length || 0;
+        }
+        
+        setPendingCount(count);
+      };
+
+      // Ejecutar conteo inicial
+      await fetchCounts(profileData);
+
+      // 3. SUSCRIPCIÓN REALTIME (Actualiza el badge automáticamente)
+      const channel = supabase
+        .channel('dashboard-realtime')
+        .on('postgres_changes' as any, { event: '*', table: 'early_requests' }, () => {
+          fetchCounts(profileData);
+        })
+        .subscribe();
+
       setLoading(false);
+      return () => { supabase.removeChannel(channel); };
     }
     getInitialData();
   }, [supabase, router]);
 
-  // Pantalla de carga estética mientras verifica sesión
   if (loading) return (
     <div className="bg-[#020617] min-h-screen flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
@@ -110,7 +138,6 @@ export default function DashboardPage() {
     </div>
   );
 
-  // Si después de cargar no hay perfil, no renderizamos nada (el useEffect ya estará redirigiendo)
   if (!profile) return null;
 
   const tabs = profile.role === 'MANAGER' 
@@ -189,17 +216,6 @@ export default function DashboardPage() {
                   {tab.badge ? <span className="relative z-10 bg-rose-600 text-[9px] px-1.5 py-0.5 rounded-md font-bold">{tab.badge}</span> : null}
                 </button>
               ))}
-            </div>
-          </div>
-          <div className="p-6 rounded-[2rem] border border-white/10 bg-gradient-to-br from-blue-500/10 to-transparent backdrop-blur-xl relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-125 transition-transform duration-700"><Fingerprint size={100} className="text-blue-400" /></div>
-            <p className="text-[9px] font-black text-blue-400/60 uppercase tracking-[0.3em] mb-4">Auth Level</p>
-            <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-6 drop-shadow-lg">{profile.role}</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between text-[8px] font-mono text-slate-500 uppercase tracking-widest"><span>Efficiency</span><span className="text-blue-400">Optimized</span></div>
-              <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden p-[1px]">
-                <motion.div initial={{ width: 0 }} animate={{ width: '75%' }} className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
-              </div>
             </div>
           </div>
         </aside>

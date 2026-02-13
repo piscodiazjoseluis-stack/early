@@ -110,7 +110,8 @@ export default function ViernesCalendar({ userProfile }: { userProfile: any }) {
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 text-blue-400">Coordenadas Temporales</label>
+            {/* CAMBIO REALIZADO AQUÍ: "fecha de early solicitada" */}
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 text-blue-400">fecha de early solicitada</label>
             <input 
               type="date" 
               value={date}
