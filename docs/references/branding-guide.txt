@@ -1,0 +1,42 @@
+EARLY FRIDAYS PMO — GUÍA VISUAL APROBADA
+
+Nombre oficial:
+Early Fridays PMO
+
+Concepto del logo:
+Reloj integrado con elementos que evocan el sol y la salida anticipada del viernes.
+Debe comunicar tiempo, organización, bienestar, productividad y equilibrio laboral.
+
+Paleta de referencia:
+- Primary: #0A2A66
+- Primary Strong: #061B45
+- Electric Blue: #1268FF
+- Cyan: #18BFE8
+- Success: #16A766
+- Warning: #F2A21B
+- Danger: #DF3F4D
+- Background: #F5F8FC
+- Surface: #FFFFFF
+
+Tipografía:
+- Manrope como familia principal.
+- Interfaz en español.
+- Nombres técnicos, archivos, funciones, tipos y variables en inglés.
+
+Iconografía:
+- Lucide React como librería funcional exclusiva.
+
+Principios visuales:
+- Corporativo, moderno, profesional, elegante, minimalista y responsivo.
+- Sidebar azul marino oscuro.
+- Azul eléctrico para acciones.
+- Cian para acentos.
+- Tarjetas blancas con bordes sutiles, radios modernos y sombras suaves.
+- Mantener alturas alineadas en tarjetas de una misma fila.
+- No reemplazar la identidad por una plantilla genérica.
+- Los mockups aprobados son la referencia visual prioritaria.
+
+Nota:
+Los archivos de logo incluidos son recortes de referencia obtenidos del mockup aprobado.
+Para producción, Codex debe reconstruir el logo como SVG limpio y escalable manteniendo
+fielmente esta composición visual, sin sustituirlo por un icono genérico.

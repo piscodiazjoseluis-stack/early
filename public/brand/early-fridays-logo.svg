@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 365 92" role="img" aria-labelledby="title desc">
+  <title id="title">Early Fridays PMO</title>
+  <desc id="desc">Reloj azul rodeado por rayos cian junto al nombre Early Fridays PMO.</desc>
+  <g fill="none" stroke-linecap="round">
+    <g stroke="#18BFE8" stroke-width="5">
+      <path d="M67 7v10"/><path d="m41 13 5 9"/><path d="m22 32 9 5"/>
+      <path d="M15 58h10"/><path d="m24 83 9-6"/><path d="m105 15-5 9"/>
+    </g>
+    <circle cx="68" cy="52" r="37" stroke="#0A2A66" stroke-width="7"/>
+    <path d="M68 27v28l20 14" stroke="#0A2A66" stroke-width="6"/>
+    <path d="M61 89h14" stroke="#0A2A66" stroke-width="7"/>
+  </g>
+  <text x="124" y="51" fill="#0A2A66" font-family="Manrope, Arial, sans-serif" font-size="31" font-weight="800">Early Fridays</text>
+  <text x="124" y="78" fill="#18BFE8" font-family="Manrope, Arial, sans-serif" font-size="24" font-weight="700">PMO</text>
+</svg>
