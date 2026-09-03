@@ -24,21 +24,32 @@
 - Pendiente externo: aplicar las migraciones nuevas y ejecutar advisors/restore usando la cuenta
   propietaria del proyecto Supabase Early.
 
-## Estado verificado el 12 de agosto de 2026
+## Estado verificado el 2 de septiembre de 2026
 
 - Producción: `https://early-fridays-pmo.vercel.app`.
 - Salud del frontend: `GET /health.json` responde `200` y `status: ok`.
 - Vercel Web Analytics y Speed Insights: habilitados en el proyecto y cargados por la aplicación.
 - Supabase `Early`: `ACTIVE_HEALTHY`, plan Free.
+- Las migraciones productivas están sincronizadas hasta `move_client_error_reporter_private`.
+- La matriz transaccional de creación, aprobación, devolución, reenvío, rechazo,
+  cancelación, cupo de equipo y confirmación de uso pasó contra la base cloud y se revirtió.
+- Security Advisor no reporta tablas sin RLS ni funciones privilegiadas expuestas. Permanece la
+  advertencia de protección de contraseñas filtradas, dependiente del plan/configuración de Auth.
+- Performance Advisor no reporta advertencias; solo índices todavía sin uso en el volumen UAT.
 - El plan Free no ofrece una restauración administrada que deba darse por garantizada. Antes de la UAT final se debe acordar una de estas alternativas: subir a Pro para respaldos diarios, o programar y custodiar dumps lógicos fuera del repositorio.
 - Pendiente organizacional: firma de UAT por representantes reales de los tres roles.
 
 ## Monitoreo
 
 - Vercel Web Analytics y Speed Insights están integrados en el cliente.
+- Los errores React, `window.error` y promesas no controladas de usuarios autenticados se
+  sanitizan y registran mediante un RPC con límite antiabuso. Portfolio los consulta en
+  **Excepciones y auditoría → Salud del cliente**.
 - Comprobar `GET /health.json` para disponibilidad del frontend.
 - Revisar errores de navegador y Auth/API de Supabase después de cada despliegue.
 - Alertas recomendadas: disponibilidad menor a 99.9%, aumento de errores Auth, solicitudes Portfolio con SLA mayor a 24 horas y beneficios aprobados sin confirmación de uso.
+- El monitor de errores no sustituye un servicio externo de disponibilidad. Para operación real,
+  conectar `/health.json` a un monitor con alertas y responsable de guardia.
 
 ## Respaldo y recuperación
 

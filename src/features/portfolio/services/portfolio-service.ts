@@ -25,3 +25,14 @@ export async function getPortfolioAudit() {
   if (error) throw error
   return data
 }
+
+export async function getClientErrorEvents() {
+  const { data, error } = await supabase
+    .from('client_error_events')
+    .select('id, occurred_at, route, source, message, release, user:profiles(full_name)')
+    .order('occurred_at', { ascending: false })
+    .limit(20)
+
+  if (error) throw error
+  return data
+}

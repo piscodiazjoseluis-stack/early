@@ -1,16 +1,25 @@
 import { useQuery } from '@tanstack/react-query'
-import { FileClock, Search, ShieldAlert } from 'lucide-react'
+import { Activity, FileClock, Search, ShieldAlert } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 
-import { getPortfolioAudit, getPortfolioWorkspace } from '../services/portfolio-service'
+import {
+  getClientErrorEvents,
+  getPortfolioAudit,
+  getPortfolioWorkspace,
+} from '../services/portfolio-service'
 
 export function PortfolioAuditPage() {
   const [search, setSearch] = useState('')
   const audit = useQuery({ queryKey: ['portfolio-audit'], queryFn: getPortfolioAudit })
+  const clientErrors = useQuery({
+    queryKey: ['client-error-events'],
+    queryFn: getClientErrorEvents,
+    refetchInterval: 60_000,
+  })
   const workspace = useQuery({ queryKey: ['portfolio-workspace'], queryFn: getPortfolioWorkspace })
   const rows = useMemo(() => {
     const value = search.trim().toLowerCase()
@@ -192,6 +201,53 @@ export function PortfolioAuditPage() {
             ) : null}
           </Card>
         </section>
+        <Card className="overflow-hidden">
+          <div className="border-border border-b p-5">
+            <h2 className="text-primary flex items-center gap-2 font-extrabold">
+              <Activity className="text-success size-5" />
+              Salud del cliente
+            </h2>
+            <p className="text-muted-foreground mt-1 text-xs">
+              Últimos errores sanitizados del aplicativo. Se actualiza cada minuto y no almacena
+              contraseñas, tokens ni parámetros de URL.
+            </p>
+          </div>
+          {clientErrors.isError ? (
+            <p className="text-danger p-6 text-sm" role="alert">
+              No se pudo consultar la telemetría del cliente.
+            </p>
+          ) : clientErrors.data?.length ? (
+            <div className="divide-border divide-y">
+              {clientErrors.data.map((event) => (
+                <article
+                  key={event.id}
+                  className="hover:bg-info-soft/20 grid gap-2 p-5 transition md:grid-cols-[180px_150px_minmax(0,1fr)]"
+                >
+                  <div>
+                    <p className="text-primary text-sm font-bold">{relationName(event.user)}</p>
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      {new Intl.DateTimeFormat('es-PE', {
+                        dateStyle: 'short',
+                        timeStyle: 'short',
+                      }).format(new Date(event.occurred_at))}
+                    </p>
+                  </div>
+                  <div>
+                    <Badge tone="warning">{event.source.replaceAll('_', ' ')}</Badge>
+                    <p className="text-muted-foreground mt-2 truncate text-xs">{event.route}</p>
+                  </div>
+                  <p className="text-muted-foreground min-w-0 text-sm break-words">
+                    {event.message}
+                  </p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground p-8 text-center text-sm">
+              Sin errores del cliente registrados. La operación se encuentra saludable.
+            </p>
+          )}
+        </Card>
       </div>
     </AppLayout>
   )

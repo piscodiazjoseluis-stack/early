@@ -1,5 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
+import { reportClientError } from '@/lib/monitoring/report-client-error'
+
 interface AppErrorBoundaryState {
   failed: boolean
 }
@@ -13,6 +15,7 @@ export class AppErrorBoundary extends Component<{ children: ReactNode }, AppErro
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('Uncaught application error', { error, componentStack: info.componentStack })
+    reportClientError('REACT_BOUNDARY', error)
   }
 
   render() {

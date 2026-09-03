@@ -171,6 +171,47 @@ export type Database = {
           },
         ]
       }
+      client_error_events: {
+        Row: {
+          id: number
+          message: string
+          metadata: Json
+          occurred_at: string
+          release: string | null
+          route: string
+          source: string
+          user_id: string | null
+        }
+        Insert: {
+          id?: number
+          message: string
+          metadata?: Json
+          occurred_at?: string
+          release?: string | null
+          route: string
+          source: string
+          user_id?: string | null
+        }
+        Update: {
+          id?: number
+          message?: string
+          metadata?: Json
+          occurred_at?: string
+          release?: string | null
+          route?: string
+          source?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'client_error_events_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       availability_periods: {
         Row: {
           created_at: string
@@ -1085,6 +1126,16 @@ export type Database = {
           rejection_comment: string
           rejection_reason: string
           target_request: string
+        }
+        Returns: Json
+      }
+      report_client_error: {
+        Args: {
+          app_release?: string
+          error_message: string
+          error_metadata?: Json
+          error_route: string
+          error_source: string
         }
         Returns: Json
       }

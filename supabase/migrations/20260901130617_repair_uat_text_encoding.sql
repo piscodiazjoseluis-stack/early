@@ -25,6 +25,11 @@ where coalesce(reason, '') ~ 'Ã|Â|â€“'
    or coalesce(cancellation_reason, '') ~ 'Ã|Â|â€“'
    or priority_explanation::text ~ 'Ã|Â|â€“';
 
+-- Approval decisions remain immutable for application traffic. The trigger is
+-- disabled only inside this migration transaction so legacy text can be
+-- repaired without changing the decision, approver, level or timestamp.
+alter table public.request_approvals disable trigger approvals_immutable;
+
 update public.request_approvals
 set
   reason_code = private.repair_spanish_mojibake(reason_code),
@@ -33,6 +38,8 @@ set
 where coalesce(reason_code, '') ~ 'Ã|Â|â€“'
    or coalesce(comment, '') ~ 'Ã|Â|â€“'
    or metadata::text ~ 'Ã|Â|â€“';
+
+alter table public.request_approvals enable trigger approvals_immutable;
 
 update public.notifications
 set title = private.repair_spanish_mojibake(title), body = private.repair_spanish_mojibake(body)
