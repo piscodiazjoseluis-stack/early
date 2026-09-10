@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Early Fridays PMO
 
-## Getting Started
+Aplicación empresarial para gestionar solicitudes, rotación, aprobaciones,
+calendarios, auditoría, BI y recomendaciones de Early Fridays dentro de PMO.
 
-First, run the development server:
+## Estado
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Flujos de colaborador, jefe directo y Portfolio Manager implementados sobre
+PostgreSQL/Supabase, con autenticación, aprobaciones, confirmación de uso,
+calendarios, gestión de equipos, auditoría y BI responsive.
+
+## Requisitos
+
+- Node.js 24 (validado con 24.13.0).
+- npm 11 (validado con 11.6.2).
+
+## Inicio rápido
+
+```powershell
+npm.cmd install
+Copy-Item .env.example .env.local
+npm.cmd run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra `http://localhost:5173`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Verificación
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```powershell
+npm.cmd run format:check
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd run test:run
+npm.cmd run test:e2e
+npm.cmd run build
+```
 
-## Learn More
+Las pruebas PostgreSQL/RLS viven en `supabase/tests/database` y se ejecutan en CI con
+`supabase test db`. Localmente requieren un runtime compatible con Docker.
 
-To learn more about Next.js, take a look at the following resources:
+Las rutas de fidelidad visual `/sistema-visual/*` solo están disponibles en desarrollo. Un build
+productivo requiere establecer explícitamente `VITE_ENABLE_VISUAL_PREVIEW=true` para publicarlas.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Guías de entrega:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Etapa 1](docs/STAGE_1.md)
+- [Etapa 2](docs/STAGE_2.md)
+- [Etapa 3](docs/STAGE_3.md)
+- [Etapa 4](docs/STAGE_4.md)
+- [Etapa 5](docs/STAGE_5.md)
+- [Etapa 6](docs/STAGE_6.md)
+- [Etapa 6.1](docs/STAGE_6_1.md)
+- [Runbook productivo](docs/PRODUCTION_RUNBOOK.md)
 
-## Deploy on Vercel
+## Seguridad
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+El navegador utiliza únicamente `VITE_SUPABASE_URL` y
+`VITE_SUPABASE_PUBLISHABLE_KEY`. Nunca agregue claves secretas, claves de
+proveedores de IA ni `SUPABASE_SERVICE_ROLE_KEY` al repositorio o a variables
+con prefijo `VITE_`.

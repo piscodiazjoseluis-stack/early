@@ -1,0 +1,5 @@
+{
+  "service": "early-fridays-pmo",
+  "status": "ok",
+  "check": "frontend-static"
+}
