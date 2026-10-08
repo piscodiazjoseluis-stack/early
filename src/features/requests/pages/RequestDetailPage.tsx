@@ -24,7 +24,7 @@ import { confirmRequestUsage, getRequestById } from '../services/request-service
 import type { RequestApprovalView, RequestView } from '../types'
 import { requestStatusPresentation } from '../utils/request-status'
 
-type TimelineState = 'completed' | 'active' | 'pending' | 'stopped'
+type TimelineState = 'completed' | 'active' | 'pending' | 'stopped' | 'skipped'
 type TimelineItem = {
   title: string
   detail: string
@@ -297,21 +297,24 @@ function TimelineStep({
   const complete = item.state === 'completed'
   const active = item.state === 'active'
   const stopped = item.state === 'stopped'
+  const skipped = item.state === 'skipped'
   return (
     <button
       type="button"
       onClick={onToggle}
-      className={`group w-full rounded-xl border p-3 text-left transition ${active ? 'border-electric-blue/35 bg-info-soft/55' : stopped ? 'border-danger/25 bg-danger-soft/45' : 'hover:border-electric-blue/25 hover:bg-info-soft/30 border-transparent'}`}
+      className={`group w-full rounded-xl border p-3 text-left transition ${active ? 'border-electric-blue/35 bg-info-soft/55' : stopped ? 'border-danger/25 bg-danger-soft/45' : skipped ? 'border-border bg-slate-50/70' : 'hover:border-electric-blue/25 hover:bg-info-soft/30 border-transparent'}`}
       aria-expanded={expanded}
     >
       <span className="flex gap-3">
         <span
-          className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border-2 ${complete ? 'border-electric-blue bg-electric-blue text-white' : active ? 'border-electric-blue bg-white' : stopped ? 'border-danger bg-danger-soft text-danger' : 'border-border bg-white'}`}
+          className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border-2 ${complete ? 'border-electric-blue bg-electric-blue text-white' : active ? 'border-electric-blue bg-white' : stopped ? 'border-danger bg-danger-soft text-danger' : skipped ? 'border-slate-300 bg-slate-100 text-slate-500' : 'border-border bg-white'}`}
         >
           {complete ? (
             <Check className="size-3" strokeWidth={3} />
           ) : stopped ? (
             '!'
+          ) : skipped ? (
+            '—'
           ) : active ? (
             <span className="bg-electric-blue size-1.5 rounded-full" />
           ) : null}
@@ -362,7 +365,9 @@ function buildTimeline(request: RequestView): TimelineItem[] {
     request.approvalHistory?.filter((item) => item.level === 'PORTFOLIO') ?? []
   const leader = leaderApprovals.at(-1)
   const portfolio = portfolioApprovals.at(-1)
-  const rejected = request.status.includes('REJECTED')
+  const rejectedByLeader = request.status === 'REJECTED_BY_TEAM_LEADER'
+  const rejectedByPortfolio = request.status === 'REJECTED_BY_PORTFOLIO'
+  const rejected = rejectedByLeader || rejectedByPortfolio
   const returned = request.status === 'RETURNED_FOR_CORRECTION'
   const resubmittedToLeader =
     request.status === 'PENDING_TEAM_LEADER' &&
@@ -372,7 +377,21 @@ function buildTimeline(request: RequestView): TimelineItem[] {
   const leaderReviewSkipped = !leader && ['PORTFOLIO', 'COMPLETED'].includes(request.approvalLevel)
   const portfolioDone = Boolean(portfolio?.decision === 'APPROVED')
   const finalDone = ['FINAL_APPROVED', 'USED', 'NOT_USED'].includes(request.status)
-  const notified = ['FINAL_APPROVED', 'USED', 'NOT_USED'].includes(request.status)
+  const terminalWithoutUse = [
+    'REJECTED_BY_TEAM_LEADER',
+    'REJECTED_BY_PORTFOLIO',
+    'CANCELLED',
+    'EXPIRED',
+  ].includes(request.status)
+  const notified = [
+    'FINAL_APPROVED',
+    'USED',
+    'NOT_USED',
+    'REJECTED_BY_TEAM_LEADER',
+    'REJECTED_BY_PORTFOLIO',
+    'CANCELLED',
+    'EXPIRED',
+  ].includes(request.status)
 
   return [
     {
@@ -394,12 +413,12 @@ function buildTimeline(request: RequestView): TimelineItem[] {
       state: resubmittedToLeader
         ? 'active'
         : leaderReviewSkipped
-          ? 'completed'
+          ? 'skipped'
           : leaderDone
             ? 'completed'
             : returned
               ? 'active'
-              : rejected && request.status === 'REJECTED_BY_TEAM_LEADER'
+              : rejectedByLeader
                 ? 'stopped'
                 : request.approvalLevel === 'TEAM_LEADER'
                   ? 'active'
@@ -410,29 +429,41 @@ function buildTimeline(request: RequestView): TimelineItem[] {
       title: 'Revisión de Portfolio',
       detail: portfolio
         ? `${decisionLabel(portfolio.decision)} · ${portfolio.approverName}`
-        : returned
-          ? 'Se reanudará después de la corrección'
-          : request.approvalLevel === 'PORTFOLIO'
-            ? `En revisión por ${request.portfolioManagerName ?? 'Portfolio Manager'}`
-            : 'Pendiente',
-      state: portfolioDone
-        ? 'completed'
-        : request.status === 'REJECTED_BY_PORTFOLIO'
-          ? 'stopped'
-          : request.approvalLevel === 'PORTFOLIO' && !returned
-            ? 'active'
-            : 'pending',
+        : rejectedByLeader
+          ? 'No aplica · el flujo terminó con el rechazo del jefe directo'
+          : returned
+            ? 'Se reanudará después de la corrección'
+            : request.approvalLevel === 'PORTFOLIO'
+              ? `En revisión por ${request.portfolioManagerName ?? 'Portfolio Manager'}`
+              : 'Pendiente',
+      state: rejectedByLeader
+        ? 'skipped'
+        : portfolioDone
+          ? 'completed'
+          : rejectedByPortfolio
+            ? 'stopped'
+            : request.approvalLevel === 'PORTFOLIO' && !returned
+              ? 'active'
+              : 'pending',
       approvals: portfolioApprovals,
     },
     {
       title: 'Aprobación final',
-      detail: finalDone ? 'Beneficio aprobado' : 'Pendiente de las revisiones',
-      state: finalDone ? 'completed' : 'pending',
+      detail: finalDone
+        ? 'Beneficio aprobado'
+        : rejected
+          ? 'No aplica · la solicitud fue rechazada'
+          : terminalWithoutUse
+            ? 'No aplica · el proceso se cerró sin aprobación final'
+            : 'Pendiente de las revisiones',
+      state: finalDone ? 'completed' : rejected || terminalWithoutUse ? 'skipped' : 'pending',
     },
     {
       title: 'Notificación y calendario',
       detail: notified
-        ? 'Resultado comunicado y calendario actualizado'
+        ? finalDone
+          ? 'Resultado comunicado y calendario actualizado'
+          : 'Resultado comunicado al solicitante'
         : 'Se ejecutará al finalizar el flujo',
       state: notified ? 'completed' : 'pending',
     },
@@ -443,14 +474,18 @@ function buildTimeline(request: RequestView): TimelineItem[] {
           ? 'Utilizado · cuenta en el límite anual'
           : request.status === 'NOT_USED'
             ? 'No utilizado · no consume cupo anual'
-            : finalDone
-              ? 'Se habilita después del horario aprobado'
-              : 'Requiere aprobación final',
+            : terminalWithoutUse
+              ? 'No aplica · el beneficio no quedó habilitado para uso'
+              : finalDone
+                ? 'Se habilita después del horario aprobado'
+                : 'Requiere aprobación final',
       state: ['USED', 'NOT_USED'].includes(request.status)
         ? 'completed'
-        : finalDone
-          ? 'active'
-          : 'pending',
+        : terminalWithoutUse
+          ? 'skipped'
+          : finalDone
+            ? 'active'
+            : 'pending',
     },
   ]
 }

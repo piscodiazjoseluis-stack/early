@@ -4,7 +4,9 @@ import { useMemo, useState } from 'react'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Modal } from '@/components/ui/Modal'
 
 import {
   getClientErrorEvents,
@@ -14,6 +16,7 @@ import {
 
 export function PortfolioAuditPage() {
   const [search, setSearch] = useState('')
+  const [exceptionsOpen, setExceptionsOpen] = useState(false)
   const audit = useQuery({ queryKey: ['portfolio-audit'], queryFn: getPortfolioAudit })
   const clientErrors = useQuery({
     queryKey: ['client-error-events'],
@@ -42,57 +45,38 @@ export function PortfolioAuditPage() {
             Vista complementaria para seguimiento, control y trazabilidad de decisiones.
           </p>
         </header>
-        <section className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <Card className="h-fit p-5">
-            <h2 className="text-primary flex items-center gap-2 font-extrabold">
-              <ShieldAlert className="text-warning size-5" />
-              Excepciones abiertas
-            </h2>
-            <div className="mt-4 space-y-3">
-              {exceptions.map((item) => (
-                <div
-                  key={item.id}
-                  className="border-border hover:border-warning/50 rounded-2xl border p-4 transition"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-primary text-sm font-extrabold">{item.requesterName}</p>
-                    <Badge tone="warning">
-                      {item.status === 'RETURNED_FOR_CORRECTION'
-                        ? 'Corrección'
-                        : item.status === 'CANCELLATION_REQUESTED'
-                          ? 'Cancelación'
-                          : 'Vencida'}
-                    </Badge>
-                  </div>
-                  <p className="text-muted-foreground mt-2 text-xs">
-                    {item.teamName} · {formatDate(item.requestedDate)}
-                  </p>
-                </div>
-              ))}
-              {!exceptions.length ? (
-                <p className="text-muted-foreground py-8 text-center text-sm">
-                  No hay excepciones abiertas.
-                </p>
-              ) : null}
-            </div>
-          </Card>
+        <section>
           <Card className="min-w-0 overflow-hidden">
-            <div className="border-border flex flex-col gap-3 border-b p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="border-border flex flex-col gap-4 border-b p-5 lg:flex-row lg:items-center lg:justify-between">
               <h2 className="text-primary flex items-center gap-2 font-extrabold">
                 <FileClock className="text-electric-blue size-5" />
                 Registro de decisiones
               </h2>
-              <label className="border-border focus-within:border-electric-blue flex h-11 items-center gap-2 rounded-xl border px-3">
-                <Search className="text-muted-foreground size-4" />
-                <input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  className="min-w-0 bg-transparent text-sm outline-none"
-                  placeholder="Buscar en auditoría"
-                />
-              </label>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button
+                  variant="secondary"
+                  onClick={() => setExceptionsOpen(true)}
+                  aria-label={`Ver excepciones abiertas: ${exceptions.length}`}
+                  className="border-warning/35 hover:border-warning hover:text-primary justify-between sm:justify-center"
+                >
+                  <ShieldAlert className="text-warning size-4" />
+                  Excepciones abiertas
+                  <span className="bg-warning-soft text-warning grid min-w-6 place-items-center rounded-full px-1.5 py-0.5 text-xs">
+                    {exceptions.length}
+                  </span>
+                </Button>
+                <label className="border-border focus-within:border-electric-blue flex h-11 items-center gap-2 rounded-xl border px-3 sm:w-64">
+                  <Search className="text-muted-foreground size-4" />
+                  <input
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+                    placeholder="Buscar en auditoría"
+                  />
+                </label>
+              </div>
             </div>
-            <div className="hidden overflow-x-auto lg:block">
+            <div className="bounded-records hidden overflow-x-auto lg:block">
               <table className="w-full min-w-[760px] text-left text-sm">
                 <thead className="bg-background text-primary text-xs">
                   <tr>
@@ -146,7 +130,7 @@ export function PortfolioAuditPage() {
                 </tbody>
               </table>
             </div>
-            <div className="divide-border divide-y lg:hidden">
+            <div className="bounded-records divide-border divide-y lg:hidden">
               {rows.map((row) => (
                 <article key={row.id} className="space-y-3 p-4">
                   <div className="flex flex-wrap items-start justify-between gap-2">
@@ -217,7 +201,7 @@ export function PortfolioAuditPage() {
               No se pudo consultar la telemetría del cliente.
             </p>
           ) : clientErrors.data?.length ? (
-            <div className="divide-border divide-y">
+            <div className="bounded-records divide-border divide-y">
               {clientErrors.data.map((event) => (
                 <article
                   key={event.id}
@@ -249,6 +233,55 @@ export function PortfolioAuditPage() {
           )}
         </Card>
       </div>
+      <Modal
+        open={exceptionsOpen}
+        title={`Excepciones abiertas (${exceptions.length})`}
+        onClose={() => setExceptionsOpen(false)}
+        showFooter={false}
+        className="max-w-2xl"
+      >
+        <p className="text-muted-foreground text-sm leading-6">
+          Casos que requieren seguimiento, corrección o una decisión pendiente para cerrar su
+          trazabilidad.
+        </p>
+        <div className="bounded-records mt-5 space-y-3 pr-1">
+          {exceptions.map((item) => (
+            <article
+              key={item.id}
+              className="border-border hover:border-warning/50 hover:bg-warning-soft/20 rounded-2xl border p-4 transition"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-primary text-sm font-extrabold">{item.requesterName}</p>
+                  <p className="text-muted-foreground mt-1 text-xs">{item.teamName}</p>
+                </div>
+                <Badge tone="warning">
+                  {item.status === 'RETURNED_FOR_CORRECTION'
+                    ? 'Corrección'
+                    : item.status === 'CANCELLATION_REQUESTED'
+                      ? 'Cancelación'
+                      : 'Vencida'}
+                </Badge>
+              </div>
+              <div className="border-border mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs">
+                <span className="text-muted-foreground">Viernes solicitado</span>
+                <span className="text-primary font-bold">{formatDate(item.requestedDate)}</span>
+              </div>
+            </article>
+          ))}
+          {!exceptions.length ? (
+            <div className="bg-background rounded-2xl p-8 text-center">
+              <ShieldAlert className="text-muted-foreground mx-auto size-7" />
+              <p className="text-primary mt-3 text-sm font-extrabold">
+                No hay excepciones abiertas
+              </p>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Todos los casos se encuentran atendidos o dentro de su flujo normal.
+              </p>
+            </div>
+          ) : null}
+        </div>
+      </Modal>
     </AppLayout>
   )
 }

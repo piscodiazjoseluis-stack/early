@@ -34,6 +34,7 @@ import {
 } from '../services/approval-service'
 
 type DecisionMode = 'approve' | 'reject' | 'return' | null
+type TimelineState = 'completed' | 'active' | 'pending' | 'failed' | 'skipped'
 
 export function ApprovalDetailPage() {
   const { requestId = '' } = useParams()
@@ -152,7 +153,7 @@ export function ApprovalDetailPage() {
 
   const isPending = isPortfolio
     ? request.status === 'PENDING_PORTFOLIO' && request.requesterId !== access?.profile.id
-    : request.status === 'PENDING_TEAM_LEADER'
+    : request.status === 'PENDING_TEAM_LEADER' && request.requesterId !== access?.profile.id
   const teamRequests = preview ? approvalPreviewRequests : (teamRequestsQuery.data ?? [])
   const sameDateRequests = teamRequests.filter(
     (item) =>
@@ -171,29 +172,15 @@ export function ApprovalDetailPage() {
     : (teamsQuery.data?.find((item) => item.name === request.teamName)?.members.length ?? 0)
   const requestTeam = teamsQuery.data?.find((item) => item.name === request.teamName)
   const isLeaderOwnRequest = requestTeam?.leaderUserId === request.requesterId
-  const teamReviewComplete =
-    isLeaderOwnRequest ||
-    request.status === 'REJECTED_BY_TEAM_LEADER' ||
-    request.status === 'RETURNED_FOR_CORRECTION' ||
-    request.approvalLevel === 'PORTFOLIO' ||
-    request.approvalLevel === 'COMPLETED'
-  const portfolioDecisionComplete = [
-    'FINAL_APPROVED',
-    'REJECTED_BY_PORTFOLIO',
-    'USED',
-    'NOT_USED',
-  ].includes(request.status)
-  const portfolioDecisionActive =
-    request.status === 'PENDING_PORTFOLIO' || request.status === 'APPROVED_BY_TEAM_LEADER'
-  const requestOutcomeComplete = [
+  const terminalOutcome = [
     'REJECTED_BY_TEAM_LEADER',
     'REJECTED_BY_PORTFOLIO',
-    'RETURNED_FOR_CORRECTION',
     'CANCELLED',
     'USED',
     'NOT_USED',
+    'EXPIRED',
   ].includes(request.status)
-  const usageConfirmationActive = request.status === 'FINAL_APPROVED'
+  const finalApproved = ['FINAL_APPROVED', 'USED', 'NOT_USED'].includes(request.status)
   const scheduleValid =
     request.startTime >= request.permittedStartTime &&
     request.startTime < request.permittedEndTime &&
@@ -366,7 +353,7 @@ export function ApprovalDetailPage() {
               <Timeline
                 label="Solicitud registrada"
                 detail={request.submittedAt ? formatDateTime(request.submittedAt) : 'Registrada'}
-                complete
+                state="completed"
               />
               <Timeline
                 label="Revisión del jefe directo"
@@ -377,44 +364,99 @@ export function ApprovalDetailPage() {
                       ? 'Solicitud rechazada por el jefe directo'
                       : request.status === 'RETURNED_FOR_CORRECTION'
                         ? 'Devuelta para corrección'
-                        : teamReviewComplete
+                        : request.approvalLevel === 'PORTFOLIO' ||
+                            request.approvalLevel === 'COMPLETED'
                           ? `Aprobada por ${request.teamName}`
                           : 'Pendiente de decisión'
                 }
-                active={!teamReviewComplete && request.status === 'PENDING_TEAM_LEADER'}
-                complete={teamReviewComplete}
+                state={
+                  isLeaderOwnRequest
+                    ? 'skipped'
+                    : request.status === 'REJECTED_BY_TEAM_LEADER'
+                      ? 'failed'
+                      : request.status === 'RETURNED_FOR_CORRECTION' ||
+                          request.status === 'PENDING_TEAM_LEADER'
+                        ? 'active'
+                        : request.approvalLevel === 'PORTFOLIO' ||
+                            request.approvalLevel === 'COMPLETED'
+                          ? 'completed'
+                          : 'pending'
+                }
               />
               <Timeline
                 label="Decisión de Portfolio"
                 detail={
-                  request.status === 'REJECTED_BY_PORTFOLIO'
-                    ? 'Solicitud rechazada por Portfolio'
-                    : portfolioDecisionComplete
-                      ? 'Decisión final completada'
-                      : portfolioDecisionActive
-                        ? isPortfolio && isPending
-                          ? 'Esperando tu decisión final'
-                          : 'Pendiente de decisión final'
-                        : 'Siguiente etapa'
+                  request.status === 'REJECTED_BY_TEAM_LEADER'
+                    ? 'No aplica: el flujo terminó en la revisión del jefe directo'
+                    : request.status === 'REJECTED_BY_PORTFOLIO'
+                      ? 'Solicitud rechazada por Portfolio'
+                      : finalApproved
+                        ? 'Decisión final completada'
+                        : request.status === 'PENDING_PORTFOLIO' ||
+                            request.status === 'APPROVED_BY_TEAM_LEADER'
+                          ? isPortfolio && isPending
+                            ? 'Esperando tu decisión final'
+                            : 'Pendiente de decisión final'
+                          : 'Siguiente etapa'
                 }
-                active={portfolioDecisionActive}
-                complete={portfolioDecisionComplete}
+                state={
+                  request.status === 'REJECTED_BY_TEAM_LEADER'
+                    ? 'skipped'
+                    : request.status === 'REJECTED_BY_PORTFOLIO'
+                      ? 'failed'
+                      : finalApproved
+                        ? 'completed'
+                        : request.status === 'PENDING_PORTFOLIO' ||
+                            request.status === 'APPROVED_BY_TEAM_LEADER'
+                          ? 'active'
+                          : 'pending'
+                }
               />
               <Timeline
-                label="Notificación y confirmación de uso"
+                label="Notificación al solicitante"
+                detail={
+                  terminalOutcome || finalApproved || request.status === 'RETURNED_FOR_CORRECTION'
+                    ? 'Resultado notificado al solicitante'
+                    : 'Se completará cuando exista una decisión o devolución'
+                }
+                state={
+                  terminalOutcome || finalApproved || request.status === 'RETURNED_FOR_CORRECTION'
+                    ? 'completed'
+                    : 'pending'
+                }
+              />
+              <Timeline
+                label="Confirmación de uso"
                 detail={
                   request.status === 'USED'
                     ? 'Uso confirmado y contabilizado'
                     : request.status === 'NOT_USED'
-                      ? 'No utilizado; no consume cupo anual'
-                      : requestOutcomeComplete
-                        ? 'Resultado notificado al solicitante'
-                        : usageConfirmationActive
-                          ? 'Aprobación notificada; falta confirmar el uso'
-                          : 'Se completará al cerrar el flujo'
+                      ? 'No utilizado; no consume el límite anual'
+                      : [
+                            'REJECTED_BY_TEAM_LEADER',
+                            'REJECTED_BY_PORTFOLIO',
+                            'CANCELLED',
+                            'EXPIRED',
+                          ].includes(request.status)
+                        ? 'No aplica: el beneficio no quedó disponible para uso'
+                        : request.status === 'FINAL_APPROVED'
+                          ? 'Se habilita al terminar el horario aprobado'
+                          : 'Requiere aprobación final'
                 }
-                active={usageConfirmationActive}
-                complete={requestOutcomeComplete}
+                state={
+                  ['USED', 'NOT_USED'].includes(request.status)
+                    ? 'completed'
+                    : [
+                          'REJECTED_BY_TEAM_LEADER',
+                          'REJECTED_BY_PORTFOLIO',
+                          'CANCELLED',
+                          'EXPIRED',
+                        ].includes(request.status)
+                      ? 'skipped'
+                      : request.status === 'FINAL_APPROVED'
+                        ? 'active'
+                        : 'pending'
+                }
               />
             </div>
           </Card>
@@ -611,21 +653,27 @@ function Impact({ value, label }: { value: string; label: string }) {
 function Timeline({
   label,
   detail,
-  complete = false,
-  active = false,
+  state,
 }: {
   label: string
   detail: string
-  complete?: boolean
-  active?: boolean
+  state: TimelineState
 }) {
+  const complete = state === 'completed'
+  const active = state === 'active'
+  const failed = state === 'failed'
+  const skipped = state === 'skipped'
   return (
     <div className="flex gap-3">
       <span
-        className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border-2 ${complete ? 'border-electric-blue bg-electric-blue text-white' : active ? 'border-electric-blue bg-white' : 'border-border bg-white'}`}
+        className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border-2 ${complete ? 'border-electric-blue bg-electric-blue text-white' : active ? 'border-electric-blue bg-white' : failed ? 'border-danger bg-danger-soft text-danger' : skipped ? 'border-slate-300 bg-slate-100 text-slate-500' : 'border-border bg-white'}`}
       >
         {complete ? (
           <Check className="size-3" />
+        ) : failed ? (
+          <X className="size-3" />
+        ) : skipped ? (
+          <span className="text-xs font-extrabold">—</span>
         ) : active ? (
           <span className="bg-electric-blue size-2 rounded-full" />
         ) : null}

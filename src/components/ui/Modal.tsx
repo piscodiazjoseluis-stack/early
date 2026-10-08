@@ -1,5 +1,5 @@
 import { X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
@@ -19,20 +19,69 @@ export function Modal({
   showFooter?: boolean
   className?: string
 }) {
+  const panelRef = useRef<HTMLElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
+  const onCloseRef = useRef(onClose)
+
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
+
+  useEffect(() => {
+    if (!open) return
+    previousFocusRef.current = document.activeElement as HTMLElement | null
+    const panel = panelRef.current
+    const focusable = panel?.querySelector<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )
+    focusable?.focus()
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onCloseRef.current()
+        return
+      }
+      if (event.key !== 'Tab' || !panel) return
+      const items = Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      )
+      if (!items.length) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      previousFocusRef.current?.focus()
+    }
+  }, [open])
+
   if (!open) return null
 
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-[#061b45]/45 p-4 backdrop-blur-[2px]"
+      className="modal-backdrop fixed inset-0 z-50 grid place-items-center bg-[#071d49]/55 p-4 backdrop-blur-[5px]"
       role="presentation"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
       <section
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="visual-modal-title"
         className={cn(
-          'border-border shadow-card w-full max-w-md rounded-3xl border bg-white p-6',
+          'modal-panel border-border shadow-card w-full max-w-md rounded-[24px] border bg-white p-6 sm:p-7',
           className,
         )}
       >

@@ -1,23 +1,29 @@
 import { AlertTriangle, RotateCcw } from 'lucide-react'
+import { useEffect } from 'react'
 import { Link, isRouteErrorResponse, useRouteError } from 'react-router-dom'
+
+import { reportClientError } from '@/lib/monitoring/report-client-error'
 
 export function RouteErrorPage() {
   const error = useRouteError()
   const isNotFound = isRouteErrorResponse(error) && error.status === 404
 
+  useEffect(() => {
+    if (isNotFound) return
+    console.error('Uncaught route error', error)
+    reportClientError('REACT_BOUNDARY', error)
+  }, [error, isNotFound])
+
   return (
-    <main
-      className="bg-background grid min-h-screen place-items-center px-6 text-center"
-      role="alert"
-    >
-      <div className="max-w-lg">
+    <main className="status-page" role="alert">
+      <div className="status-panel">
         <span className="bg-warning-soft text-warning mx-auto grid size-14 place-items-center rounded-2xl">
           <AlertTriangle className="size-7" aria-hidden="true" />
         </span>
         <p className="text-warning mt-5 text-sm font-bold tracking-widest uppercase">
           {isNotFound ? 'Página no encontrada' : 'Error inesperado'}
         </p>
-        <h1 className="text-primary-strong mt-3 text-4xl font-extrabold">
+        <h1 className="text-primary-strong mt-3 text-3xl font-extrabold sm:text-4xl">
           {isNotFound ? 'No encontramos esta pantalla' : 'No pudimos mostrar esta pantalla'}
         </h1>
         <p className="text-muted-foreground mt-4">

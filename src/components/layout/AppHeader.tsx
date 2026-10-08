@@ -1,11 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
 import { Bell, Check, ChevronDown, LogOut, Menu, UserRound } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
-import { collaboratorPreviewNotifications } from '@/features/collaborator/data/collaborator-preview-data'
-import { getMyNotifications } from '@/features/collaborator/services/collaborator-service'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useUnreadNotifications } from '@/features/collaborator/hooks/useUnreadNotifications'
 
 export function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
   const location = useLocation()
@@ -14,15 +12,7 @@ export function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
   const preview = location.pathname.startsWith('/sistema-visual')
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const notificationsQuery = useQuery({
-    queryKey: ['my-notifications', 'header'],
-    queryFn: getMyNotifications,
-    enabled: !preview && Boolean(access),
-    refetchInterval: 30_000,
-  })
-  const unread = preview
-    ? collaboratorPreviewNotifications.filter((item) => !item.read_at).length
-    : (notificationsQuery.data ?? []).filter((item) => !item.read_at).length
+  const unread = useUnreadNotifications()
   const leaderPreview = location.pathname.startsWith('/sistema-visual/jefe')
   const fullName = preview
     ? leaderPreview
@@ -31,10 +21,17 @@ export function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
     : (access?.profile.full_name ?? 'Usuario')
   const jobTitle = preview
     ? leaderPreview
-      ? 'Project Analyst'
+      ? 'Jefe directo / PMO'
       : 'Practicante / PMO'
     : (access?.profile.job_title ?? 'Colaborador')
+  const isPortfolio = Boolean(access?.roles.includes('PORTFOLIO_MANAGER'))
+  const isLeader = leaderPreview || Boolean(access?.roles.includes('TEAM_LEADER'))
+  const roleLabel = isPortfolio ? 'Portfolio Manager' : isLeader ? 'Jefe directo' : 'Colaborador'
+  const subtitle = jobTitle.toLocaleLowerCase('es').includes(roleLabel.toLocaleLowerCase('es'))
+    ? jobTitle
+    : `${roleLabel} · ${jobTitle}`
   const initials = getInitials(fullName)
+  const pageLabel = getPageLabel(location.pathname)
 
   useEffect(() => {
     function close(event: MouseEvent) {
@@ -51,7 +48,7 @@ export function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
   }
 
   return (
-    <header className="border-sidebar-border flex min-h-[92px] items-center justify-between gap-4 border-b bg-white px-4 sm:px-7 lg:px-10">
+    <header className="app-header border-sidebar-border flex min-h-[82px] items-center justify-between gap-4 border-b px-4 sm:px-7 lg:px-10">
       <div className="flex min-w-0 items-center gap-3">
         <button
           type="button"
@@ -59,14 +56,15 @@ export function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
           className="border-border text-primary hover:border-electric-blue hover:bg-info-soft grid size-11 shrink-0 place-items-center rounded-xl border transition lg:hidden"
           aria-label="Abrir navegación"
         >
-          <Menu className="size-5" />
+          <Menu className="size-5" aria-hidden="true" />
         </button>
-        <Avatar initials={initials} />
         <div className="min-w-0">
-          <p className="text-primary truncate text-sm font-extrabold sm:text-base">
-            ¡Bienvenido, {fullName.split(' ')[0]}!
+          <p className="text-muted-foreground text-[10px] font-extrabold tracking-[0.16em] uppercase">
+            Early Fridays PMO
           </p>
-          <p className="text-muted-foreground truncate text-xs sm:text-sm">{jobTitle}</p>
+          <p className="text-primary mt-0.5 truncate text-sm font-extrabold sm:text-base">
+            {pageLabel}
+          </p>
         </div>
       </div>
 
@@ -74,10 +72,10 @@ export function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
         <button
           type="button"
           onClick={() => void navigate(to('/notificaciones'))}
-          className="text-primary hover:bg-info-soft relative grid size-11 place-items-center rounded-xl transition"
+          className="border-border/80 text-primary hover:border-electric-blue/30 hover:bg-info-soft relative grid size-11 place-items-center rounded-xl border bg-white shadow-[0_4px_14px_rgb(7_29_73/5%)] transition"
           aria-label={`Notificaciones, ${unread} pendientes`}
         >
-          <Bell className="size-5" />
+          <Bell className="size-5" aria-hidden="true" />
           {unread ? (
             <span className="bg-electric-blue absolute top-1.5 right-1 grid size-5 place-items-center rounded-full text-[10px] font-extrabold text-white">
               {unread}
@@ -88,14 +86,14 @@ export function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
           <button
             type="button"
             onClick={() => setMenuOpen((current) => !current)}
-            className="hover:bg-background flex items-center gap-3 rounded-xl p-2 transition"
+            className="border border-transparent hover:border-border hover:bg-white hover:shadow-soft flex items-center gap-3 rounded-xl p-1.5 transition"
             aria-expanded={menuOpen}
             aria-haspopup="menu"
           >
             <Avatar initials={initials} compact />
             <span className="hidden text-left md:block">
               <span className="text-primary block text-sm font-extrabold">{fullName}</span>
-              <span className="text-muted-foreground block text-xs">{jobTitle}</span>
+              <span className="text-muted-foreground block text-xs">{subtitle}</span>
             </span>
             <ChevronDown
               className={`text-muted-foreground hidden size-4 transition-transform md:block ${menuOpen ? 'rotate-180' : ''}`}
@@ -115,7 +113,7 @@ export function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
                 }}
                 className="text-primary hover:bg-info-soft flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-bold transition"
               >
-                <UserRound className="text-electric-blue size-4" />
+                <UserRound className="text-electric-blue size-4" aria-hidden="true" />
                 Mi perfil
               </button>
               <button
@@ -124,7 +122,7 @@ export function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
                 onClick={() => void handleLogout()}
                 className="text-danger hover:bg-danger-soft flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-bold transition"
               >
-                <LogOut className="size-4" />
+                <LogOut className="size-4" aria-hidden="true" />
                 Cerrar sesión
               </button>
             </div>
@@ -159,4 +157,29 @@ function getInitials(name: string) {
     .map((part) => part[0])
     .join('')
     .toUpperCase()
+}
+
+function getPageLabel(pathname: string) {
+  const normalized = pathname.replace(/^\/sistema-visual(?:\/jefe)?/, '') || '/panel'
+  const entries: Array<[string, string]> = [
+    ['/solicitudes/nueva', 'Nueva solicitud'],
+    ['/solicitudes/', 'Detalle de solicitud'],
+    ['/solicitudes', 'Mis solicitudes'],
+    ['/aprobaciones/', 'Detalle de aprobación'],
+    ['/aprobaciones', 'Aprobaciones'],
+    ['/calendario', 'Calendario'],
+    ['/elegibilidad', 'Elegibilidad'],
+    ['/historial', 'Historial'],
+    ['/mi-equipo', 'Mi equipo'],
+    ['/rotacion', 'Rotación'],
+    ['/bi-equipo', 'BI del equipo'],
+    ['/bi-global', 'BI y analítica'],
+    ['/analisis-inteligente', 'Análisis inteligente'],
+    ['/equipos', 'Gestión de equipos'],
+    ['/excepciones-auditoria', 'Excepciones y auditoría'],
+    ['/notificaciones', 'Notificaciones'],
+    ['/perfil', 'Mi perfil'],
+    ['/reglas-ayuda', 'Reglas y ayuda'],
+  ]
+  return entries.find(([path]) => normalized.startsWith(path))?.[1] ?? 'Resumen ejecutivo'
 }

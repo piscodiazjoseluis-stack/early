@@ -9,26 +9,28 @@
 
 @theme {
   --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
-  --color-primary: #0a2a66;
-  --color-primary-strong: #061b45;
-  --color-electric-blue: #1268ff;
-  --color-cyan: #18bfe8;
+  --color-primary: #10336d;
+  --color-primary-strong: #071d49;
+  --color-electric-blue: #176bff;
+  --color-cyan: #20bde4;
+  --color-calendar-selection: #7557d5;
+  --color-calendar-selection-soft: #f5f1ff;
   --color-success: #16a766;
   --color-warning: #f2a21b;
   --color-danger: #df3f4d;
-  --color-background: #f5f8fc;
+  --color-background: #f3f7fc;
   --color-surface: #ffffff;
-  --color-foreground: #12213d;
-  --color-muted-foreground: #62708a;
-  --color-border: #dfe7f1;
+  --color-foreground: #152540;
+  --color-muted-foreground: #64728a;
+  --color-border: #dce6f2;
   --color-sidebar-border: #e4ebf4;
   --color-info-soft: #eaf3ff;
   --color-success-soft: #e9f9f0;
   --color-warning-soft: #fff7e6;
   --color-danger-soft: #ffedef;
-  --shadow-soft: 0 6px 20px rgb(6 27 69 / 8%);
-  --shadow-card: 0 20px 50px rgb(6 27 69 / 12%);
-  --radius-panel: 18px;
+  --shadow-soft: 0 10px 30px rgb(7 29 73 / 8%);
+  --shadow-card: 0 24px 70px rgb(7 29 73 / 14%);
+  --radius-panel: 20px;
   --radius-control: 12px;
 }
 
@@ -48,16 +50,352 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background:
+    radial-gradient(circle at 82% -8%, rgb(32 189 228 / 10%), transparent 28rem),
+    var(--color-background);
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.app-sidebar {
+  color: white;
+  border-color: rgb(255 255 255 / 10%);
+  background:
+    radial-gradient(circle at 12% 3%, rgb(32 189 228 / 26%), transparent 24%),
+    radial-gradient(circle at 100% 82%, rgb(23 107 255 / 16%), transparent 36%),
+    linear-gradient(180deg, #0d3a82 0%, #0a2e6d 46%, #071d49 100%);
+  box-shadow: 16px 0 48px rgb(7 29 73 / 16%);
+  scrollbar-color: rgb(255 255 255 / 24%) transparent;
+}
+
+.sidebar-brand-media {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  mask-image: none;
+}
+
+.sidebar-brand-media {
+  height: clamp(78px, 12vh, 108px);
+}
+
+.sidebar-media-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sidebar-notification-count {
+  display: inline-grid;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  place-items: center;
+  border-radius: 999px;
+  padding: 0 0.3rem;
+  color: #0a2a66;
+  background: white;
+  font-size: 0.65rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.sidebar-nav-scroll {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 26%) transparent;
+}
+
+.sidebar-nav-scroll::-webkit-scrollbar {
+  width: 0.35rem;
+}
+
+.sidebar-nav-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgb(255 255 255 / 26%);
+}
+
+.sidebar-footer {
+  padding-top: 0.65rem;
+}
+
+.sidebar-footer-action {
+  display: flex;
+  min-height: 2.75rem;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.75rem;
+  padding: 0 0.75rem;
+  color: rgb(255 255 255 / 88%);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-align: left;
+  transition: color 180ms ease, background-color 180ms ease;
+}
+
+.sidebar-footer-action:hover,
+.sidebar-footer-action:focus-visible {
+  color: white;
+  background: rgb(255 255 255 / 10%);
+  outline: none;
+}
+
+.sidebar-footer-separator {
+  height: 1px;
+  margin: 0.25rem 0.75rem;
+  background: rgb(255 255 255 / 18%);
+}
+
+.preview-mode-banner {
+  padding: 0.5rem 1rem;
+  color: #694500;
+  border-bottom: 1px solid rgb(242 162 27 / 35%);
+  background: #fff7e6;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.sidebar-nav-item {
+  position: relative;
+  isolation: isolate;
+  color: white;
+  transition:
+    color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.sidebar-nav-item-idle {
+  color: rgb(255 255 255 / 76%);
+}
+
+.sidebar-nav-item-idle:hover {
+  color: white;
+  background: rgb(255 255 255 / 9%);
+  transform: translateX(2px);
+}
+
+.sidebar-nav-item-active {
+  color: white;
+  background: linear-gradient(135deg, #176bff 0%, #2584ff 100%);
+  box-shadow: 0 12px 30px rgb(0 20 64 / 34%), inset 0 1px 0 rgb(255 255 255 / 20%);
+}
+
+.sidebar-nav-item-active::before {
+  position: absolute;
+  inset: 0 auto 0 -0.25rem;
+  width: 0.2rem;
+  border-radius: 999px;
+  background: #75e3ff;
+  content: '';
+}
+
+.sidebar-close {
+  color: white;
+  background: rgb(255 255 255 / 10%);
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.sidebar-close:hover {
+  background: rgb(255 255 255 / 18%);
+  transform: rotate(4deg);
+}
+
+.app-main > * {
+  animation: app-page-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.app-workspace {
+  position: relative;
+  min-width: 0;
+  isolation: isolate;
+}
+
+.app-workspace::before {
+  position: fixed;
+  z-index: -1;
+  top: 4.5rem;
+  right: -8rem;
+  width: 30rem;
+  height: 30rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgb(32 189 228 / 8%), transparent 68%);
+  content: '';
+  pointer-events: none;
+}
+
+.app-header {
+  background: rgb(255 255 255 / 88%);
+  box-shadow: 0 1px 0 rgb(7 29 73 / 3%);
+  backdrop-filter: blur(18px) saturate(145%);
+}
+
+.app-main {
+  position: relative;
+}
+
+.app-main h1 {
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.app-main h2,
+.app-main h3 {
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+}
+
+.app-main p {
+  text-wrap: pretty;
+}
+
+.app-shell :is(button, a, summary):not(:disabled) {
+  cursor: pointer;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app-shell button:not(:disabled):active,
+.app-shell [role='button']:not([aria-disabled='true']):active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.app-shell :is(input, textarea, select) {
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.app-shell table tbody tr {
+  transition: background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.app-shell table thead {
+  background: linear-gradient(180deg, #f7faff 0%, #f1f6fc 100%);
+}
+
+.app-shell table thead th {
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.app-shell table tbody tr:hover {
+  background: color-mix(in srgb, var(--color-info-soft) 55%, white);
+}
+
+.app-shell [role='menu'] {
+  transform-origin: top right;
+  animation: menu-enter 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.app-shell .recharts-tooltip-wrapper {
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease !important;
+}
+
+.modal-backdrop {
+  animation: modal-backdrop-enter 180ms ease-out both;
+}
+
+.modal-panel {
+  transform-origin: 50% 35%;
+  animation: modal-panel-enter 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes app-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 0.75rem;
+  left: 0.75rem;
+  transform: translateY(-160%);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: white;
+  background: var(--color-primary-strong);
+  box-shadow: var(--shadow-card);
+  font-size: 0.875rem;
+  font-weight: 800;
+  transition: transform 160ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
 }
 
 :focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--color-electric-blue) 32%, transparent);
-  outline-offset: 3px;
+  outline: 3px solid color-mix(in srgb, var(--color-electric-blue) 28%, transparent);
+  outline-offset: 2px;
 }
 
 ::selection {
@@ -73,8 +411,113 @@ select {
   font: inherit;
 }
 
+.bounded-records {
+  max-height: min(60vh, 42rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.bounded-records::-webkit-scrollbar {
+  width: 0.55rem;
+  height: 0.55rem;
+}
+
+.bounded-records::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-muted-foreground) 42%, transparent);
+  background-clip: padding-box;
+}
+
+.bounded-records table thead {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+}
+
 @utility input-control {
-  @apply border-border text-primary hover:border-primary/40 focus:border-electric-blue focus:ring-electric-blue/10 disabled:bg-background h-11 w-full rounded-xl border bg-white px-3 text-sm font-medium transition outline-none focus:ring-4 disabled:cursor-not-allowed;
+  @apply border-border text-primary hover:border-primary/35 focus:border-electric-blue focus:ring-electric-blue/10 disabled:bg-background h-11 w-full rounded-xl border bg-white px-3 text-sm font-semibold shadow-[0_1px_2px_rgb(7_29_73/3%)] transition outline-none focus:ring-4 disabled:cursor-not-allowed;
+}
+
+/* Shared enterprise surface language. These classes intentionally sit below the
+   feature layer so every role receives the same polish without touching data flow. */
+.enterprise-surface {
+  border: 1px solid color-mix(in srgb, var(--color-border) 92%, white);
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 10px 35px rgb(7 29 73 / 7%);
+}
+
+.interactive-surface {
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.interactive-surface:hover {
+  border-color: rgb(23 107 255 / 24%);
+  box-shadow: 0 18px 48px rgb(7 29 73 / 10%);
+  transform: translateY(-2px);
+}
+
+.app-shell :is(input, textarea, select):not(:disabled) {
+  background-color: rgb(255 255 255 / 96%);
+  box-shadow: inset 0 1px 1px rgb(7 29 73 / 2%);
+}
+
+.app-shell :is(input, textarea, select):not(:disabled):hover {
+  border-color: rgb(23 107 255 / 35%);
+}
+
+.app-shell :is(input, textarea, select):focus {
+  border-color: var(--color-electric-blue);
+  box-shadow: 0 0 0 4px rgb(23 107 255 / 10%);
+}
+
+.app-shell :is(input, textarea, select):user-invalid {
+  border-color: color-mix(in srgb, var(--color-danger) 70%, white);
+  box-shadow: 0 0 0 4px rgb(223 63 77 / 8%);
+}
+
+.status-page {
+  position: relative;
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  overflow: hidden;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at 15% 10%, rgb(32 189 228 / 12%), transparent 26rem),
+    radial-gradient(circle at 90% 90%, rgb(23 107 255 / 10%), transparent 30rem),
+    var(--color-background);
+}
+
+.status-panel {
+  width: min(100%, 38rem);
+  border: 1px solid color-mix(in srgb, var(--color-border) 88%, white);
+  border-radius: 1.75rem;
+  padding: clamp(2rem, 6vw, 3.5rem);
+  background: rgb(255 255 255 / 94%);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+  backdrop-filter: blur(16px);
+}
+
+.app-shell ::-webkit-scrollbar {
+  width: 0.55rem;
+  height: 0.55rem;
+}
+
+.app-shell ::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgb(100 114 138 / 38%);
+  background-clip: padding-box;
+}
+
+.app-shell ::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .calendar-shell .fc {
@@ -168,6 +611,27 @@ select {
   background: color-mix(in srgb, var(--color-info-soft) 58%, transparent);
 }
 
+.calendar-shell .fc .fc-daygrid-day.calendar-day-selected {
+  background: var(--color-calendar-selection-soft) !important;
+  box-shadow: inset 0 0 0 2px var(--color-calendar-selection);
+}
+
+.calendar-shell .fc .fc-day-today {
+  background: color-mix(in srgb, var(--color-info-soft) 82%, white) !important;
+  box-shadow: inset 0 0 0 2px var(--color-electric-blue);
+}
+
+.calendar-shell .fc .fc-day-today.calendar-day-selected {
+  outline: 2px solid var(--color-calendar-selection);
+  outline-offset: -6px;
+}
+
+.calendar-shell .fc .fc-day-today .calendar-day-number {
+  color: white;
+  background: var(--color-electric-blue);
+  box-shadow: 0 4px 12px rgb(29 108 255 / 24%);
+}
+
 .calendar-shell .fc .fc-event {
   cursor: pointer;
   border: 0;
@@ -193,7 +657,7 @@ select {
 
 .calendar-shell .fc .calendar-event-selected {
   outline: 2px solid white;
-  box-shadow: 0 0 0 3px var(--color-electric-blue);
+  box-shadow: 0 0 0 3px var(--color-calendar-selection);
 }
 
 .calendar-shell .fc .fc-event:hover {
@@ -215,6 +679,10 @@ select {
 }
 
 @media (max-width: 640px) {
+  .app-main {
+    padding-inline: 1rem;
+  }
+
   .calendar-shell .fc .fc-toolbar {
     align-items: flex-start;
     flex-direction: column;
@@ -233,6 +701,24 @@ select {
   }
 }
 
+@media (min-width: 1024px) {
+  .app-header {
+    position: sticky;
+    z-index: 25;
+    top: 0;
+  }
+}
+
+@media (max-height: 680px) {
+  .sidebar-brand-media {
+    height: 72px;
+  }
+
+  .sidebar-nav-item {
+    min-height: 2.65rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -241,5 +727,9 @@ select {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  .sidebar-media-video {
+    display: none;
   }
 }

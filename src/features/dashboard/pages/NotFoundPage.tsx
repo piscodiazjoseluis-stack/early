@@ -1,11 +1,15 @@
+import { SearchX } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export function NotFoundPage() {
   return (
-    <main className="bg-background grid min-h-screen place-items-center px-6 text-center">
-      <div>
-        <p className="text-electric-blue text-sm font-bold tracking-widest uppercase">Error 404</p>
-        <h1 className="text-primary-strong mt-3 text-4xl font-extrabold">Página no encontrada</h1>
+    <main className="status-page">
+      <div className="status-panel">
+        <span className="bg-info-soft text-electric-blue mx-auto grid size-14 place-items-center rounded-2xl">
+          <SearchX className="size-7" aria-hidden="true" />
+        </span>
+        <p className="text-electric-blue mt-5 text-sm font-bold tracking-widest uppercase">Error 404</p>
+        <h1 className="text-primary-strong mt-3 text-3xl font-extrabold sm:text-4xl">Página no encontrada</h1>
         <p className="text-muted-foreground mt-4">
           La dirección ingresada no corresponde a una pantalla disponible.
         </p>

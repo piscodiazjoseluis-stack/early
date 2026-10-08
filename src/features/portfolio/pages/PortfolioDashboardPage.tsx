@@ -39,15 +39,20 @@ import {
   pendingStatuses,
   portfolioPeople,
   rejectedStatuses,
+  requestedFridayEvolution,
   summarizeRequestStatuses,
   teamParticipation,
-  weeklyEvolution,
 } from '../utils/portfolio-analysis'
 
 export function PortfolioDashboardPage() {
   const navigate = useNavigate()
   const { access } = useAuth()
-  const query = useQuery({ queryKey: ['portfolio-workspace'], queryFn: getPortfolioWorkspace })
+  const query = useQuery({
+    queryKey: ['portfolio-workspace'],
+    queryFn: getPortfolioWorkspace,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+  })
   const requests = query.data?.requests ?? []
   const teams = query.data?.teams ?? []
   const people = portfolioPeople(teams)
@@ -67,7 +72,7 @@ export function PortfolioDashboardPage() {
     .map((team) => ({ name: team.name, value: teamParticipation(team, requests) }))
     .sort((a, b) => a.value - b.value)
   const firstName = access?.profile.full_name.split(' ')[0] ?? 'María Luisa'
-  const evolution = weeklyEvolution(requests)
+  const evolution = requestedFridayEvolution(requests)
 
   return (
     <AppLayout>
@@ -418,25 +423,31 @@ export function PortfolioDashboardPage() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-primary font-extrabold">
-                Evolución de solicitudes y aprobaciones
+                Solicitudes por viernes solicitado
               </h2>
               <p className="text-muted-foreground mt-1 text-xs">
-                Actividad semanal real de las últimas ocho semanas.
+                Historial completo según la fecha solicitada del beneficio.
               </p>
             </div>
             <div className="flex gap-3 text-xs">
-              <Legend color="bg-electric-blue" label="Solicitudes" />
-              <Legend color="bg-success" label="Aprobaciones finales" />
+              <Legend color="bg-electric-blue" label="Solicitudes registradas" />
+              <Legend color="bg-success" label="Aprobadas finalmente" />
             </div>
           </div>
           <div className="mt-5 h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={evolution} margin={{ left: 8, right: 18, bottom: 8 }}>
                 <CartesianGrid strokeDasharray="4 4" stroke="#dbe5f2" vertical={false} />
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#6b7b97' }} tickMargin={12} />
+                <XAxis
+                  dataKey="label"
+                  interval="preserveStartEnd"
+                  tick={{ fontSize: 11, fill: '#6b7b97' }}
+                  tickMargin={12}
+                />
                 <YAxis allowDecimals={false} width={34} tick={{ fontSize: 11, fill: '#6b7b97' }} />
                 <Tooltip />
                 <Line
+                  name="Solicitudes registradas"
                   type="monotone"
                   dataKey="solicitudes"
                   stroke="#1769ff"
@@ -444,6 +455,7 @@ export function PortfolioDashboardPage() {
                   dot={{ r: 4 }}
                 />
                 <Line
+                  name="Aprobadas finalmente"
                   type="monotone"
                   dataKey="aprobaciones"
                   stroke="#12ad69"

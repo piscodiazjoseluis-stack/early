@@ -5,7 +5,7 @@ import { getTeams } from '@/features/teams/services/team-service'
 import type { TeamView } from '@/features/teams/types'
 
 import { approvalPreviewRequests } from '../data/approval-preview-data'
-import { getTeamApprovalRequests } from '../services/approval-service'
+import { getTeamWorkspaceRequests } from '../services/approval-service'
 import type { TeamApprovalRequest } from '../types'
 
 const previewTeam: TeamView = {
@@ -48,13 +48,15 @@ export function useTeamLeaderWorkspace(preview = false) {
   const query = useQuery({
     queryKey: ['team-leader-workspace', access?.profile.id],
     queryFn: async () => {
-      const [requests, teams] = await Promise.all([getTeamApprovalRequests(), getTeams()])
+      const [requests, teams] = await Promise.all([getTeamWorkspaceRequests(), getTeams()])
       return {
         requests,
         team: teams.find((team) => team.leaderUserId === access?.profile.id),
       }
     },
     enabled: !preview && Boolean(access?.profile.id),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   })
 
   return {

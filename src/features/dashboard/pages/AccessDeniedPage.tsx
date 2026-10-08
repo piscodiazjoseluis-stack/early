@@ -6,15 +6,15 @@ export function AccessDeniedPage() {
   const attemptedPath = (location.state as { from?: string } | null)?.from
 
   return (
-    <main className="bg-background grid min-h-screen place-items-center px-6 text-center">
-      <div className="max-w-lg">
+    <main className="status-page">
+      <div className="status-panel">
         <span className="bg-danger-soft text-danger mx-auto grid size-14 place-items-center rounded-2xl">
           <ShieldAlert className="size-7" aria-hidden="true" />
         </span>
         <p className="text-danger mt-5 text-sm font-bold tracking-widest uppercase">
           Acceso denegado
         </p>
-        <h1 className="text-primary-strong mt-3 text-4xl font-extrabold">
+        <h1 className="text-primary-strong mt-3 text-3xl font-extrabold sm:text-4xl">
           Tu perfil no tiene permiso para entrar aquí
         </h1>
         <p className="text-muted-foreground mt-4">

@@ -7,6 +7,7 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader } from '@/components/ui/Card'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 
 import { collaboratorPreviewNotifications } from '../data/collaborator-preview-data'
 import {
@@ -14,9 +15,11 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from '../services/collaborator-service'
+import { notificationRequestPath } from '../utils/notification-routing'
 
 export function NotificationsPage({ preview = false }: { preview?: boolean }) {
   const navigate = useNavigate()
+  const { access } = useAuth()
   const queryClient = useQueryClient()
   const query = useQuery({
     queryKey: ['my-notifications'],
@@ -47,11 +50,11 @@ export function NotificationsPage({ preview = false }: { preview?: boolean }) {
   function openNotification(id: string, requestId: string | null) {
     if (preview) setPreviewRead((current) => [...new Set([...current, id])])
     else markOne.mutate(id)
-    if (requestId)
-      void navigate(
-        preview ? `/sistema-visual/solicitudes/${requestId}` : `/solicitudes/${requestId}`,
-        { state: { from: 'notifications' } },
-      )
+    if (requestId) {
+      void navigate(notificationRequestPath(access?.roles ?? [], requestId, preview), {
+        state: { from: 'notifications' },
+      })
+    }
   }
 
   return (
@@ -93,7 +96,7 @@ export function NotificationsPage({ preview = false }: { preview?: boolean }) {
               <p className="text-primary mt-3 font-extrabold">Todo está al día</p>
             </div>
           ) : (
-            <div className="divide-border divide-y">
+            <div className="bounded-records divide-border divide-y">
               {notifications.map((item) => (
                 <button
                   key={item.id}

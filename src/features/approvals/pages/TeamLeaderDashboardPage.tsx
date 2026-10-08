@@ -34,11 +34,15 @@ export function TeamLeaderDashboardPage() {
     queryKey: ['team-leader-requests'],
     queryFn: getTeamApprovalRequests,
     enabled: !preview && Boolean(access),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   })
   const teamsQuery = useQuery({
     queryKey: ['teams', 'leader-dashboard'],
     queryFn: getTeams,
     enabled: !preview && Boolean(access),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   })
   const requests = preview ? approvalPreviewRequests : (requestsQuery.data ?? [])
   const pending = requests.filter((request) => request.status === 'PENDING_TEAM_LEADER')

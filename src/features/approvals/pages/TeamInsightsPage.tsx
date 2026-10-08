@@ -10,6 +10,7 @@ import { useTeamLeaderWorkspace } from '../hooks/useTeamLeaderWorkspace'
 export function TeamInsightsPage() {
   const preview = useLocation().pathname.startsWith('/sistema-visual')
   const { requests, team } = useTeamLeaderWorkspace(preview)
+  const teamName = team?.name ?? 'tu equipo'
   const pending = requests.filter((r) => r.status === 'PENDING_TEAM_LEADER')
   const members = team?.members ?? []
   const usage = new Map(
@@ -60,7 +61,7 @@ export function TeamInsightsPage() {
         <section className="grid gap-5 lg:grid-cols-3">
           <Insight icon={<Lightbulb />} title="Hallazgo principal" tone="blue">
             {requests.length
-              ? `${requests.length} solicitudes del equipo alimentan este análisis.`
+              ? `${requests.length} solicitudes registradas en ${teamName}, incluidas las del jefe directo, alimentan este análisis.`
               : 'Aún no hay solicitudes para analizar.'}
           </Insight>
           <Insight icon={<ShieldCheck />} title="Recomendación semanal" tone="green">
@@ -97,8 +98,9 @@ export function TeamInsightsPage() {
           </div>
         </Card>
         <p className="text-muted-foreground text-xs">
-          Metodología actual: reglas determinísticas sobre solicitudes, elegibilidad y uso
-          confirmado. No se presenta como IA predictiva ni reemplaza la decisión del jefe.
+          Alcance: exclusivamente {teamName}. Metodología actual: reglas determinísticas sobre
+          solicitudes reales visibles por Supabase, elegibilidad y uso confirmado. No se presenta
+          como IA predictiva ni reemplaza la decisión del jefe.
         </p>
       </div>
     </AppLayout>

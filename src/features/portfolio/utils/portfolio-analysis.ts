@@ -13,6 +13,13 @@ export const pendingStatuses = new Set([
 export const closedWithoutBenefitStatuses = new Set(['CANCELLED', 'EXPIRED'])
 export const lowParticipationThreshold = 50
 
+export type RequestedFridayEvolutionPoint = {
+  date: string
+  label: string
+  solicitudes: number
+  aprobaciones: number
+}
+
 export function summarizeRequestStatuses(requests: Array<Pick<TeamApprovalRequest, 'status'>>) {
   const approved = requests.filter((request) => approvedStatuses.has(request.status)).length
   const inProgress = requests.filter((request) => pendingStatuses.has(request.status)).length
@@ -29,6 +36,14 @@ export function summarizeRequestStatuses(requests: Array<Pick<TeamApprovalReques
     closedWithoutBenefit,
     unclassified: requests.length - approved - inProgress - rejected - closedWithoutBenefit,
   }
+}
+
+export function resolvedApprovalRate(
+  requests: Array<Pick<TeamApprovalRequest, 'status'>>,
+) {
+  const { approved, rejected } = summarizeRequestStatuses(requests)
+  const resolved = approved + rejected
+  return resolved ? Math.round((approved / resolved) * 100) : 0
 }
 
 export function filterPortfolioRequests(
@@ -113,37 +128,45 @@ export function approvalSla(request: TeamApprovalRequest) {
   return { deadline, elapsedHours, critical: elapsedHours >= 24 }
 }
 
-export function weeklyEvolution(requests: TeamApprovalRequest[], weeks = 8) {
-  const anchor = startOfWeek(new Date())
-  return Array.from({ length: weeks }, (_, index) => {
-    const start = new Date(anchor)
-    start.setDate(anchor.getDate() - (weeks - index - 1) * 7)
-    const end = new Date(start)
-    end.setDate(start.getDate() + 7)
-    return {
-      label: `${String(start.getDate()).padStart(2, '0')} ${new Intl.DateTimeFormat('es-PE', { month: 'short' }).format(start)}`,
-      solicitudes: requests.filter((request) =>
-        within(request.submittedAt ?? request.createdAt, start, end),
-      ).length,
-      aprobaciones: requests.filter(
-        (request) =>
-          approvedStatuses.has(request.status) &&
-          request.finalDecidedAt &&
-          within(request.finalDecidedAt, start, end),
-      ).length,
-    }
-  })
-}
+export function requestedFridayEvolution(requests: TeamApprovalRequest[]) {
+  if (!requests.length) return []
 
-function startOfWeek(date: Date) {
-  const result = new Date(date)
-  const day = (result.getDay() + 6) % 7
-  result.setDate(result.getDate() - day)
-  result.setHours(0, 0, 0, 0)
+  const byRequestedDate = new Map<string, { solicitudes: number; aprobaciones: number }>()
+  requests.forEach((request) => {
+    const current = byRequestedDate.get(request.requestedDate) ?? {
+      solicitudes: 0,
+      aprobaciones: 0,
+    }
+    current.solicitudes += 1
+    if (approvedStatuses.has(request.status)) current.aprobaciones += 1
+    byRequestedDate.set(request.requestedDate, current)
+  })
+
+  const requestedDates = [...byRequestedDate.keys()].sort()
+  const firstIsoDate = requestedDates[0]
+  const lastIsoDate = requestedDates[requestedDates.length - 1]
+  if (!firstIsoDate || !lastIsoDate) return []
+  const first = parseIsoDate(firstIsoDate)
+  const last = parseIsoDate(lastIsoDate)
+  const result: RequestedFridayEvolutionPoint[] = []
+
+  for (const date = first; date <= last; date.setUTCDate(date.getUTCDate() + 7)) {
+    const isoDate = date.toISOString().slice(0, 10)
+    const values = byRequestedDate.get(isoDate) ?? { solicitudes: 0, aprobaciones: 0 }
+    result.push({
+      date: isoDate,
+      label: new Intl.DateTimeFormat('es-PE', {
+        day: '2-digit',
+        month: 'short',
+        timeZone: 'UTC',
+      }).format(date),
+      ...values,
+    })
+  }
+
   return result
 }
 
-function within(value: string, start: Date, end: Date) {
-  const date = new Date(value)
-  return date >= start && date < end
+function parseIsoDate(value: string) {
+  return new Date(`${value}T00:00:00.000Z`)
 }

@@ -57,6 +57,17 @@ export async function getTeamApprovalRequests(): Promise<TeamApprovalRequest[]> 
   return (data as unknown as ApprovalQueryRow[]).map(mapApprovalRequest)
 }
 
+export async function getTeamWorkspaceRequests(): Promise<TeamApprovalRequest[]> {
+  const { data, error } = await supabase
+    .from('early_friday_requests')
+    .select(approvalSelection)
+    .is('deleted_at', null)
+    .order('requested_date', { ascending: true })
+
+  if (error) throw error
+  return (data as unknown as ApprovalQueryRow[]).map(mapApprovalRequest)
+}
+
 export async function getPortfolioApprovalRequests(): Promise<TeamApprovalRequest[]> {
   const { data, error } = await supabase
     .from('early_friday_requests')

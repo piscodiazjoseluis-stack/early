@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { AppRole } from '@/features/auth/types'
+import { REQUEST_OWNER_ROLES } from '@/features/auth/constants/role-permissions'
 
 let currentRoles: AppRole[] = []
 
@@ -39,6 +40,17 @@ describe('autorización de rutas por rol', () => {
   it('permite al jefe directo entrar a aprobaciones', () => {
     currentRoles = ['TEAM_LEADER']
     renderGuard(['TEAM_LEADER', 'PORTFOLIO_MANAGER'])
+    expect(screen.getByText('Contenido autorizado')).toBeInTheDocument()
+  })
+
+  it('permite a colaboradores y jefes directos consultar sus propias solicitudes', () => {
+    currentRoles = ['TEAM_LEADER']
+    const { unmount } = renderGuard(REQUEST_OWNER_ROLES)
+    expect(screen.getByText('Contenido autorizado')).toBeInTheDocument()
+    unmount()
+
+    currentRoles = ['COLLABORATOR']
+    renderGuard(REQUEST_OWNER_ROLES)
     expect(screen.getByText('Contenido autorizado')).toBeInTheDocument()
   })
 

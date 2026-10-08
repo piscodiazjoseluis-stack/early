@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useForm, type UseFormRegisterReturn } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 
+import { Button } from '@/components/ui/Button'
+
 import { AuthShell } from '../components/AuthShell'
 import { updatePasswordSchema, type UpdatePasswordFormValues } from '../schemas/auth-schemas'
 import { updatePassword } from '../services/auth-service'
@@ -66,14 +68,15 @@ export function UpdatePasswordPage() {
                 {submitError}
               </p>
             )}
-            <button
+            <Button
               type="submit"
+              size="lg"
               disabled={isSubmitting}
-              className="bg-electric-blue hover:bg-primary flex h-14 w-full items-center justify-center gap-2 rounded-xl font-bold text-white disabled:opacity-60"
+              className="h-14 w-full rounded-2xl"
             >
-              <KeyRound className="size-5" />
+              <KeyRound className="size-5" aria-hidden="true" />
               {isSubmitting ? 'Actualizando…' : 'Actualizar contraseña'}
-            </button>
+            </Button>
           </form>
         )}
       </div>

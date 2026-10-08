@@ -5,7 +5,6 @@ import {
   BriefcaseBusiness,
   ChevronDown,
   ChevronRight,
-  CircleGauge,
   Ellipsis,
   FolderKanban,
   House,
@@ -28,10 +27,13 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { Badge } from '@/components/ui/Badge'
+import { SidebarFooter } from '@/components/layout/SidebarFooter'
+import { SidebarBrandMedia } from '@/components/layout/SidebarMedia'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useUnreadNotifications } from '@/features/collaborator/hooks/useUnreadNotifications'
 import { cn } from '@/lib/utils'
 
 import { TeamActionModal, type TeamAction } from '../components/TeamActionModal'
@@ -47,6 +49,7 @@ const portfolioNavigation = [
   { label: 'BI y analítica', icon: BarChart3, path: '/bi-global' },
   { label: 'Análisis inteligente', icon: RotateCcw, path: '/analisis-inteligente' },
   { label: 'Excepciones y auditoría', icon: Settings, path: '/excepciones-auditoria' },
+  { label: 'Notificaciones', icon: Bell, path: '/notificaciones' },
 ]
 
 const eligibilityPresentation = {
@@ -63,6 +66,7 @@ function TeamManagementContent({
   navigate: (path: string) => void
 }) {
   const { access } = useAuth()
+  const unreadNotifications = useUnreadNotifications()
   const [query, setQuery] = useState('')
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -71,7 +75,9 @@ function TeamManagementContent({
   const canManage =
     preview ||
     Boolean(access?.roles.some((role) => role === 'ADMIN' || role === 'PORTFOLIO_MANAGER'))
-  const portfolioName = preview ? 'Jose Pisco' : (access?.profile.full_name ?? 'Portfolio Manager')
+  const portfolioName = preview
+    ? 'Maria Luisa Temoche'
+    : (access?.profile.full_name ?? 'Portfolio Manager')
   const portfolioJob = preview
     ? 'Portfolio Manager'
     : (access?.profile.job_title ?? 'Portfolio Manager')
@@ -99,7 +105,10 @@ function TeamManagementContent({
     teams.find((team) => team.id === selectedTeamId) ?? filteredTeams[0] ?? teams[0]
 
   return (
-    <div className="bg-background min-h-screen lg:grid lg:grid-cols-[268px_minmax(0,1fr)]">
+    <div className="app-shell bg-background min-h-screen lg:grid lg:grid-cols-[276px_minmax(0,1fr)]">
+      <a className="skip-link" href="#main-content">
+        Ir al contenido principal
+      </a>
       {sidebarOpen ? (
         <button
           type="button"
@@ -110,59 +119,61 @@ function TeamManagementContent({
       ) : null}
       <aside
         className={cn(
-          'border-sidebar-border fixed inset-y-0 left-0 z-40 flex w-[268px] flex-col border-r bg-white px-5 py-6 transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0',
+          'app-sidebar fixed inset-y-0 left-0 z-40 flex w-[276px] flex-col overflow-hidden border-r px-4 py-4 transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="flex items-center justify-between">
-          <img src="/brand/early-fridays-logo.svg" alt="Early Fridays PMO" className="w-[210px]" />
+        <div className="sidebar-brand-row flex shrink-0 items-start justify-between gap-2">
+          <SidebarBrandMedia />
           <button
             type="button"
             onClick={() => setSidebarOpen(false)}
-            className="text-muted-foreground grid size-9 place-items-center lg:hidden"
+            className="sidebar-close grid size-9 shrink-0 place-items-center rounded-lg lg:hidden"
             aria-label="Cerrar menú"
           >
             <X className="size-5" />
           </button>
         </div>
-        <nav aria-label="Navegación de portfolio" className="mt-10 space-y-1.5">
+        <p className="mt-5 px-3 text-[10px] font-extrabold tracking-[0.18em] text-white/45 uppercase">
+          Espacio de trabajo
+        </p>
+        <nav aria-label="Navegación de portfolio" className="sidebar-nav-scroll mt-2 space-y-1.5">
           {portfolioNavigation.map(({ label, icon: Icon, path }) => {
-            const active = window.location.pathname === path
+            const active =
+              window.location.pathname === path ||
+              (preview && path === '/equipos' && window.location.pathname.endsWith('/equipos'))
             return (
               <button
                 key={label}
                 type="button"
+                aria-current={active ? 'page' : undefined}
                 onClick={() => navigate(path)}
                 className={cn(
-                  'flex min-h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-bold transition',
+                  'sidebar-nav-item flex min-h-11 w-full items-center gap-3 rounded-xl px-3.5 text-left text-[13px] font-bold',
                   active
-                    ? 'bg-info-soft text-electric-blue'
-                    : 'text-muted-foreground hover:bg-info-soft/70 hover:text-primary',
+                    ? 'sidebar-nav-item-active bg-primary'
+                    : 'sidebar-nav-item-idle',
                 )}
               >
-                <Icon className="size-5" />
-                {label}
+                <Icon className="size-5 shrink-0" />
+                <span>{label}</span>
+                {label === 'Notificaciones' && unreadNotifications > 0 ? (
+                  <span
+                    className="sidebar-notification-count ml-auto"
+                    aria-label={`${unreadNotifications} notificaciones pendientes`}
+                  >
+                    {unreadNotifications}
+                  </span>
+                ) : null}
               </button>
             )
           })}
         </nav>
-        <div className="border-border mt-auto rounded-2xl border p-4">
-          <div className="text-primary flex items-center gap-2 text-xs font-extrabold">
-            <ShieldCheck className="text-electric-blue size-5" />
-            Acceso seguro
-          </div>
-          <p className="text-muted-foreground mt-2 text-[11px] leading-4">
-            Acceso protegido con Supabase Authentication.
-          </p>
-          <p className="text-success mt-4 flex items-center gap-2 text-[11px] font-bold">
-            <CircleGauge className="size-4" />
-            Supabase
-          </p>
-        </div>
+        <SidebarFooter onNavigate={() => setSidebarOpen(false)} />
       </aside>
 
       <div className="min-w-0">
-        <header className="border-sidebar-border flex min-h-[118px] items-center justify-between gap-5 border-b bg-white px-4 sm:px-7 lg:px-9">
+        <header className="app-header border-sidebar-border flex min-h-[82px] items-center justify-between gap-5 border-b px-4 sm:px-7 lg:px-10">
           <div className="flex min-w-0 items-center gap-3">
             <button
               type="button"
@@ -173,9 +184,11 @@ function TeamManagementContent({
               <Menu className="size-5" />
             </button>
             <div>
-              <h1 className="text-primary-strong text-2xl font-extrabold">Gestión de equipos</h1>
-              <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
-                Administra la estructura de equipos, roles y elegibilidad del PMO.
+              <p className="text-muted-foreground text-[10px] font-extrabold tracking-[0.16em] uppercase">
+                Early Fridays PMO
+              </p>
+              <p className="text-primary mt-0.5 text-sm font-extrabold sm:text-base">
+                Gestión de equipos
               </p>
             </div>
           </div>
@@ -191,10 +204,16 @@ function TeamManagementContent({
             </label>
             <button
               type="button"
-              className="text-primary hover:bg-info-soft grid size-11 place-items-center rounded-xl transition"
-              aria-label="Notificaciones"
+              onClick={() => navigate('/notificaciones')}
+              className="text-primary hover:bg-info-soft relative grid size-11 place-items-center rounded-xl transition"
+              aria-label={`Notificaciones, ${unreadNotifications} pendientes`}
             >
               <Bell className="size-5" />
+              {unreadNotifications > 0 ? (
+                <span className="bg-electric-blue absolute mt-[-30px] ml-[30px] grid size-5 place-items-center rounded-full text-[10px] font-extrabold text-white">
+                  {unreadNotifications}
+                </span>
+              ) : null}
             </button>
             <span className="relative grid size-11 place-items-center rounded-full bg-[#f0e7e3] text-xs font-extrabold text-[#704435]">
               {portfolioName
@@ -212,7 +231,26 @@ function TeamManagementContent({
           </div>
         </header>
 
-        <main className="p-4 sm:p-6 lg:p-7">
+        {preview ? (
+          <div className="preview-mode-banner" role="status">
+            Vista de demostración visual · Los datos mostrados son simulados y no corresponden a
+            una sesión real de Supabase.
+          </div>
+        ) : null}
+
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="app-main px-4 py-6 outline-none sm:px-7 sm:py-8 lg:px-10 lg:py-10"
+        >
+          <header className="mb-6">
+            <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
+              Gestión de equipos
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Administra la estructura, los roles y la elegibilidad del PMO.
+            </p>
+          </header>
           <label className="border-border mb-4 flex h-11 items-center gap-2 rounded-xl border bg-white px-3 md:hidden">
             <Search className="text-muted-foreground size-5" />
             <input
@@ -310,8 +348,6 @@ function TeamManagementContent({
             </section>
             <RotationPanel
               team={selectedTeam}
-              teams={teams}
-              preview={preview}
               onViewDetails={() => selectedTeam && setDetailTeam(selectedTeam)}
             />
           </div>
@@ -404,7 +440,7 @@ function TeamCard({
       </div>
       <div className="p-4 sm:p-5">
         <p className="text-primary mb-2 text-xs font-extrabold">Integrantes</p>
-        <div className="divide-border divide-y">
+        <div className="bounded-records divide-border divide-y">
           {team.members.map((member) => (
             <MemberRow key={member.membershipId} member={member} />
           ))}
@@ -452,13 +488,9 @@ function MemberRow({ member }: { member: TeamMemberView }) {
 
 function RotationPanel({
   team,
-  teams,
-  preview,
   onViewDetails,
 }: {
   team?: TeamView
-  teams: TeamView[]
-  preview: boolean
   onViewDetails: () => void
 }) {
   const eligible =
@@ -468,14 +500,10 @@ function RotationPanel({
   const underReview =
     team?.members.filter((member) => getEligibilityStatus(member) === 'under_review') ?? []
   const nextMember = eligible[0]
-  const allMembers = teams.flatMap((currentTeam) => currentTeam.members)
-  const waitingMembers = preview
-    ? ['Miguel Atencio', 'Leonardo Navarrete']
-        .map((name) => allMembers.find((member) => member.fullName === name))
-        .filter((member): member is TeamMemberView => Boolean(member))
-    : (team?.members.filter(
-        (member) => member.participatesInRotation && member.userId !== nextMember?.userId,
-      ) ?? [])
+  const waitingMembers =
+    team?.members.filter(
+      (member) => member.participatesInRotation && member.userId !== nextMember?.userId,
+    ) ?? []
 
   return (
     <Card className="h-fit p-5">

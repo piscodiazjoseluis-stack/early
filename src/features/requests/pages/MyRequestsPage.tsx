@@ -177,7 +177,7 @@ export function MyRequestsPage({ preview = false }: { preview?: boolean }) {
               </p>
             </div>
           ) : null}
-          <div className="divide-border divide-y">
+          <div className="bounded-records divide-border divide-y" aria-label="Solicitudes activas">
             {filteredRequests.map((request) => (
               <RequestRow
                 key={request.id}

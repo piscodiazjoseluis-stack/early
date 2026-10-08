@@ -38,16 +38,19 @@ export function LoginPage() {
 
   return (
     <AuthShell>
-      <div className="mx-auto w-full max-w-xl">
-        <h1 className="text-primary-strong text-4xl font-extrabold tracking-tight sm:text-5xl">
+      <div className="mx-auto w-full max-w-lg">
+        <span className="bg-info-soft text-electric-blue inline-flex rounded-full px-3 py-1.5 text-[10px] font-extrabold tracking-[0.14em] uppercase">
+          Portal corporativo
+        </span>
+        <h1 className="text-primary-strong mt-5 text-4xl font-extrabold tracking-[-0.045em] sm:text-5xl">
           Bienvenido de nuevo
         </h1>
-        <p className="text-muted-foreground mt-4 max-w-lg text-base leading-7 sm:text-lg">
+        <p className="text-muted-foreground mt-4 max-w-md text-sm leading-6 sm:text-base">
           Inicia sesión para gestionar tus Early Fridays, colaborar con tu equipo y planificar con
           transparencia.
         </p>
 
-        <form className="mt-10 space-y-6" onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
+        <form className="mt-9 space-y-5" onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
           <div className="group">
             <label
               htmlFor="email"
@@ -66,7 +69,7 @@ export function LoginPage() {
                 autoComplete="email"
                 placeholder="tucorreo@empresa.com"
                 aria-invalid={Boolean(errors.email)}
-                className="border-border text-primary-strong hover:border-primary/40 hover:shadow-soft focus:border-electric-blue focus:ring-electric-blue/10 h-14 w-full rounded-xl border bg-white pr-4 pl-12 transition-[border-color,box-shadow] outline-none placeholder:text-[#99a6bc] focus:ring-4"
+                className="border-border text-primary-strong hover:border-electric-blue/40 focus:border-electric-blue focus:ring-electric-blue/10 h-14 w-full rounded-2xl border bg-white pr-4 pl-12 shadow-[0_4px_18px_rgb(7_29_73/5%)] transition-[border-color,box-shadow] outline-none placeholder:text-[#99a6bc] focus:ring-4"
                 {...register('email')}
               />
             </div>
@@ -91,7 +94,7 @@ export function LoginPage() {
                 autoComplete="current-password"
                 placeholder="Ingresa tu contraseña"
                 aria-invalid={Boolean(errors.password)}
-                className="border-border text-primary-strong hover:border-primary/40 hover:shadow-soft focus:border-electric-blue focus:ring-electric-blue/10 h-14 w-full rounded-xl border bg-white pr-12 pl-12 transition-[border-color,box-shadow] outline-none placeholder:text-[#99a6bc] focus:ring-4"
+                className="border-border text-primary-strong hover:border-electric-blue/40 focus:border-electric-blue focus:ring-electric-blue/10 h-14 w-full rounded-2xl border bg-white pr-12 pl-12 shadow-[0_4px_18px_rgb(7_29_73/5%)] transition-[border-color,box-shadow] outline-none placeholder:text-[#99a6bc] focus:ring-4"
                 {...register('password')}
               />
               <button
@@ -137,7 +140,7 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="from-primary to-electric-blue shadow-soft hover:shadow-card focus-visible:outline-electric-blue flex h-14 w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r px-5 font-bold text-white transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
+            className="from-primary to-electric-blue focus-visible:outline-electric-blue flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r px-5 font-extrabold text-white shadow-[0_12px_28px_rgb(23_107_255/24%)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_34px_rgb(23_107_255/32%)] focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <LogIn className="size-5" aria-hidden="true" />
             {isSubmitting ? 'Iniciando sesión…' : 'Iniciar sesión'}

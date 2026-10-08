@@ -5,14 +5,14 @@ import type { ButtonHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-extrabold transition-[background-color,border-color,color,box-shadow,transform] duration-200 disabled:pointer-events-none disabled:opacity-50 active:translate-y-px',
+  'inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-sm font-extrabold tracking-[-0.01em] transition-[background-color,border-color,color,box-shadow,transform] duration-200 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 active:translate-y-px',
   {
     variants: {
       variant: {
         primary:
-          'bg-electric-blue text-white shadow-sm hover:bg-primary hover:shadow-soft focus-visible:outline-electric-blue/30',
+          'bg-gradient-to-r from-electric-blue to-[#2b82ff] text-white shadow-[0_8px_20px_rgb(23_107_255/20%)] hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgb(23_107_255/28%)] focus-visible:outline-electric-blue/30',
         secondary:
-          'border-border bg-white text-primary border hover:border-electric-blue hover:text-electric-blue',
+          'border-border bg-white text-primary border shadow-[0_2px_8px_rgb(7_29_73/4%)] hover:-translate-y-0.5 hover:border-electric-blue/50 hover:text-electric-blue hover:shadow-soft',
         ghost: 'text-primary hover:bg-info-soft hover:text-electric-blue',
         danger: 'bg-danger text-white hover:bg-[#bd2d3a]',
       },

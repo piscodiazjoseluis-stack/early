@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Ban, CalendarCheck, CheckCircle2, ChevronRight, History, XCircle } from 'lucide-react'
+import { CalendarCheck, CheckCircle2, ChevronRight, History, XCircle } from 'lucide-react'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -9,8 +9,10 @@ import { Card, CardHeader } from '@/components/ui/Card'
 import { requestPreviewData } from '@/features/requests/data/request-preview-data'
 import { getMyRequests } from '@/features/requests/services/request-service'
 import type { RequestView } from '@/features/requests/types'
+import { sortRequestsByRecency } from '@/features/requests/utils/request-calendar'
 import {
-  isTerminalRequest,
+  isActiveRequest,
+  requestStageSummary,
   requestStatusPresentation,
 } from '@/features/requests/utils/request-status'
 
@@ -25,15 +27,10 @@ export function HistoryPage({ preview = false }: { preview?: boolean }) {
     () => (preview ? requestPreviewData : (requestsQuery.data ?? [])),
     [preview, requestsQuery.data],
   )
-  const requests = useMemo(
-    () => allRequests.filter((request) => isTerminalRequest(request.status)),
-    [allRequests],
-  )
+  const requests = useMemo(() => sortRequestsByRecency(allRequests), [allRequests])
+  const active = requests.filter((request) => isActiveRequest(request.status)).length
   const used = requests.filter((request) => request.status === 'USED').length
   const rejected = requests.filter((request) => request.status.includes('REJECTED')).length
-  const withoutUse = requests.filter((request) =>
-    ['NOT_USED', 'CANCELLED', 'EXPIRED'].includes(request.status),
-  ).length
 
   return (
     <AppLayout>
@@ -41,7 +38,7 @@ export function HistoryPage({ preview = false }: { preview?: boolean }) {
         <header>
           <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">Mi historial</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Consulta procesos finalizados, sus responsables y el resultado de cada Early Friday.
+            Trazabilidad completa de todas tus solicitudes, desde el registro hasta su resultado.
           </p>
         </header>
 
@@ -50,39 +47,42 @@ export function HistoryPage({ preview = false }: { preview?: boolean }) {
           aria-label="Resumen histórico"
         >
           <HistoryMetric
-            label="Procesos finalizados"
+            label="Solicitudes registradas"
             value={requests.length}
             icon={<History />}
             tone="info"
           />
+          <HistoryMetric
+            label="Procesos activos"
+            value={active}
+            icon={<CalendarCheck />}
+            tone="info"
+          />
           <HistoryMetric label="Utilizados" value={used} icon={<CheckCircle2 />} tone="success" />
           <HistoryMetric label="Rechazados" value={rejected} icon={<XCircle />} tone="danger" />
-          <HistoryMetric
-            label="Sin uso o cancelados"
-            value={withoutUse}
-            icon={<Ban />}
-            tone="neutral"
-          />
         </section>
 
         <Card className="mt-5 overflow-hidden">
           <div className="border-border border-b p-5 sm:p-6">
             <CardHeader
               title="Resultados anteriores"
-              description="Abre cualquier registro para consultar el tracking completo."
+              description="Incluye procesos activos y finalizados. Abre un registro para consultar su tracking completo."
               icon={<CalendarCheck className="size-5" />}
             />
           </div>
           {requests.length === 0 && !requestsQuery.isLoading ? (
             <div className="p-10 text-center">
               <History className="text-electric-blue mx-auto size-9" />
-              <p className="text-primary mt-3 font-extrabold">Aún no hay procesos finalizados</p>
+              <p className="text-primary mt-3 font-extrabold">Aún no hay solicitudes registradas</p>
               <p className="text-muted-foreground mt-1 text-sm">
-                Las solicitudes activas se gestionan desde Mis solicitudes.
+                Cuando registres una solicitud aparecerá aquí desde el primer momento.
               </p>
             </div>
           ) : null}
-          <div className="divide-border divide-y">
+          <div
+            className="bounded-records divide-border divide-y"
+            aria-label="Historial completo de solicitudes"
+          >
             {requests.map((request) => (
               <HistoryRow
                 key={request.id}
@@ -143,6 +143,10 @@ function HistoryRow({ request, onView }: { request: RequestView; onView: () => v
 }
 
 function getFinalDecision(request: RequestView) {
+  if (isActiveRequest(request.status)) {
+    const summary = requestStageSummary(request)
+    return `${summary.stage} · ${summary.responsible}`
+  }
   const lastDecision = request.approvalHistory?.findLast((approval) =>
     ['REJECTED', 'APPROVED'].includes(approval.decision),
   )

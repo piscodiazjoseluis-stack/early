@@ -1,7 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
-import { Check, LogOut, Mail, Save, ShieldCheck, UserRound } from 'lucide-react'
+import { Check, Mail, Save, ShieldCheck, UserRound } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
@@ -12,8 +11,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import { updateMyProfile } from '../services/collaborator-service'
 
 export function ProfilePage({ preview = false }: { preview?: boolean }) {
-  const navigate = useNavigate()
-  const { access, user, logout, refreshAccess } = useAuth()
+  const { access, user, refreshAccess } = useAuth()
   const [fullName, setFullName] = useState(
     preview ? 'Jose Pisco' : (access?.profile.full_name ?? ''),
   )
@@ -34,15 +32,6 @@ export function ProfilePage({ preview = false }: { preview?: boolean }) {
     : (access?.profile.job_title ?? 'Sin cargo registrado')
   const email = preview ? 'jose.pisco@empresa.com' : (user?.email ?? 'Correo no disponible')
   const roles = preview ? ['COLLABORATOR'] : (access?.roles ?? [])
-
-  async function handleLogout() {
-    if (preview) {
-      void navigate('/iniciar-sesion')
-      return
-    }
-    await logout()
-    void navigate('/iniciar-sesion')
-  }
 
   return (
     <AppLayout>
@@ -70,10 +59,6 @@ export function ProfilePage({ preview = false }: { preview?: boolean }) {
                 </Badge>
               ))}
             </div>
-            <Button variant="secondary" className="mt-6 w-full" onClick={() => void handleLogout()}>
-              <LogOut className="size-4" />
-              Cerrar sesión
-            </Button>
           </Card>
           <Card className="p-5 sm:p-6">
             <CardHeader title="Información personal" icon={<UserRound className="size-5" />} />

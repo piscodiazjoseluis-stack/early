@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/features/auth/hooks/useAuth', () => ({
@@ -11,9 +12,11 @@ import { TeamManagementPreviewPage } from '@/features/teams/pages/TeamManagement
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
-    <QueryClientProvider client={client}>
-      <TeamManagementPreviewPage />
-    </QueryClientProvider>,
+    <MemoryRouter initialEntries={['/sistema-visual/equipos']}>
+      <QueryClientProvider client={client}>
+        <TeamManagementPreviewPage />
+      </QueryClientProvider>
+    </MemoryRouter>,
   )
 }
 

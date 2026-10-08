@@ -62,7 +62,8 @@ export async function getMyRequests(): Promise<RequestView[]> {
       .select(requestSelection)
       .eq('requester_user_id', authData.user.id)
       .is('deleted_at', null)
-      .order('requested_date', { ascending: false }),
+      .order('requested_date', { ascending: false })
+      .order('created_at', { ascending: false }),
     supabase.rpc('get_my_request_tracking', {}),
   ])
 

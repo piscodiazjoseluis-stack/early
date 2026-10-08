@@ -10,13 +10,13 @@ import { NewRequestPreviewPage } from '@/features/requests/pages/NewRequestPage'
 import { RequestDetailPreviewPage } from '@/features/requests/pages/RequestDetailPage'
 import { HistoryPreviewPage } from '@/features/collaborator/pages/HistoryPage'
 
-function renderRoute(element: React.ReactNode, route = '/') {
+function renderRoute(element: React.ReactNode, route = '/', pattern = '*') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[route]}>
         <Routes>
-          <Route path="*" element={element} />
+          <Route path={pattern} element={element} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -65,12 +65,29 @@ describe('solicitudes visuales', () => {
     expect(screen.getByText('Team Hugo Ramirez')).toBeInTheDocument()
   })
 
-  it('separa los procesos finalizados en Mi historial', () => {
+  it('distingue rechazo, notificación y etapas que no aplican', () => {
+    renderRoute(
+      <RequestDetailPreviewPage />,
+      '/sistema-visual/solicitudes/preview-11-apr',
+      '/sistema-visual/solicitudes/:requestId',
+    )
+
+    expect(screen.getByText(/Rechazada.*Hugo Ramirez/i)).toBeInTheDocument()
+    expect(
+      screen.getByText('No aplica · el flujo terminó con el rechazo del jefe directo'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Resultado comunicado al solicitante')).toBeInTheDocument()
+    expect(
+      screen.getByText('No aplica · el beneficio no quedó habilitado para uso'),
+    ).toBeInTheDocument()
+  })
+
+  it('muestra la trazabilidad completa en Mi historial', () => {
     renderRoute(<HistoryPreviewPage />)
 
     expect(screen.getByRole('heading', { name: 'Mi historial' })).toBeInTheDocument()
     expect(screen.getByText('Utilizado')).toBeInTheDocument()
     expect(screen.getByText('Rechazada por el jefe')).toBeInTheDocument()
-    expect(screen.queryByText('Pendiente de Portfolio')).not.toBeInTheDocument()
+    expect(screen.getByText('Pendiente de Portfolio')).toBeInTheDocument()
   })
 })

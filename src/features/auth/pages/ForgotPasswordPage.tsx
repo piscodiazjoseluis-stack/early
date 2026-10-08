@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 
+import { Button } from '@/components/ui/Button'
+
 import { AuthShell } from '../components/AuthShell'
 import { recoverySchema, type RecoveryFormValues } from '../schemas/auth-schemas'
 import { requestPasswordReset } from '../services/auth-service'
@@ -76,14 +78,15 @@ export function ForgotPasswordPage() {
                 {submitError}
               </p>
             )}
-            <button
+            <Button
               type="submit"
+              size="lg"
               disabled={isSubmitting}
-              className="bg-electric-blue hover:bg-primary flex h-14 w-full items-center justify-center gap-2 rounded-xl font-bold text-white disabled:opacity-60"
+              className="h-14 w-full rounded-2xl"
             >
-              <Send className="size-5" />
+              <Send className="size-5" aria-hidden="true" />
               {isSubmitting ? 'Enviando…' : 'Enviar enlace seguro'}
-            </button>
+            </Button>
           </form>
         )}
       </div>

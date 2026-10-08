@@ -157,7 +157,7 @@ export function ApprovalsPage() {
                   : `Mostrando ${filtered.length} de ${requests.length}`}
               </p>
             </div>
-            <div className="hidden overflow-x-auto lg:block">
+            <div className="bounded-records hidden overflow-x-auto lg:block">
               <table className="w-full min-w-[850px] text-left text-sm">
                 <thead className="bg-background text-primary text-xs">
                   <tr>
@@ -182,7 +182,7 @@ export function ApprovalsPage() {
                 </tbody>
               </table>
             </div>
-            <div className="space-y-3 p-4 lg:hidden">
+            <div className="bounded-records space-y-3 p-4 lg:hidden">
               {filtered.map((request) => (
                 <RequestCard
                   key={request.id}

@@ -70,7 +70,7 @@ export function TeamRotationPage() {
             {isLoading ? (
               <p className="p-10 text-center text-sm">Calculando rotación...</p>
             ) : (
-              <div className="divide-border divide-y">
+              <div className="bounded-records divide-border divide-y">
                 {ranked.map((item, index) => (
                   <article
                     key={item.member.userId}

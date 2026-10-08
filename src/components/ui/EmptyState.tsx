@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/Button'
 
 export function EmptyState() {
   return (
-    <div className="border-border grid min-h-56 place-items-center rounded-2xl border border-dashed bg-white p-6 text-center">
+    <div className="border-border bg-gradient-to-br from-white to-info-soft/35 grid min-h-64 place-items-center rounded-3xl border border-dashed p-8 text-center">
       <div>
-        <span className="bg-info-soft text-electric-blue mx-auto grid size-12 place-items-center rounded-2xl">
+        <span className="bg-info-soft text-electric-blue shadow-soft mx-auto grid size-14 place-items-center rounded-2xl">
           <CalendarPlus className="size-6" />
         </span>
         <h3 className="text-primary mt-4 font-extrabold">Aún no hay solicitudes</h3>

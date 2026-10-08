@@ -1,10 +1,10 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import type { TeamApprovalRequest } from '@/features/approvals/types'
 import {
   filterPortfolioRequests,
   recommendPortfolioCandidate,
-  weeklyEvolution,
+  requestedFridayEvolution,
 } from '@/features/portfolio/utils/portfolio-analysis'
 
 function request(
@@ -36,16 +36,12 @@ function request(
   } satisfies TeamApprovalRequest
 }
 
-describe('evolución semanal del portfolio', () => {
-  afterEach(() => vi.useRealTimers())
-
+describe('evolución por viernes solicitado del portfolio', () => {
   it('no contabiliza rechazos como aprobaciones', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-08-12T12:00:00Z'))
-    const current = weeklyEvolution([
+    const current = requestedFridayEvolution([
       request('FINAL_APPROVED', '2026-08-11T12:00:00Z'),
       request('REJECTED_BY_PORTFOLIO', '2026-08-11T13:00:00Z'),
-    ]).at(-1)
+    ])[0]
 
     expect(current).toMatchObject({ solicitudes: 2, aprobaciones: 1 })
   })

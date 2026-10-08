@@ -25,10 +25,10 @@ export function AuthenticatedEntryPage() {
   }
 
   return (
-    <main className="bg-background grid min-h-screen place-items-center px-6 py-12">
-      <section className="border-border shadow-card w-full max-w-2xl rounded-3xl border bg-white p-8 sm:p-10">
+    <main className="status-page">
+      <section className="enterprise-surface w-full max-w-2xl rounded-[28px] p-8 text-left sm:p-10">
         <img
-          src="/brand/early-fridays-logo-reference.png"
+          src="/brand/early-fridays-logo.svg"
           alt="Early Fridays PMO"
           className="w-60"
         />

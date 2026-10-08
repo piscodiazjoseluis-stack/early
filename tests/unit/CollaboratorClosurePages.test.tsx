@@ -30,9 +30,14 @@ function renderRoute(element: React.ReactNode, route = '/sistema-visual') {
 
 describe('cierre del perfil colaborador', () => {
   it('muestra calendario personal y detalle del viernes', () => {
-    renderRoute(<PersonalCalendarPreviewPage />, '/sistema-visual/calendario')
+    const { container } = renderRoute(
+      <PersonalCalendarPreviewPage />,
+      '/sistema-visual/calendario',
+    )
     expect(screen.getByRole('heading', { name: 'Mi calendario' })).toBeInTheDocument()
     expect(screen.getByText('Detalle del viernes')).toBeInTheDocument()
+    expect(container.querySelector('.calendar-day-selected')).toBeInTheDocument()
+    expect(container.querySelector('.calendar-event-selected')).toBeInTheDocument()
   })
 
   it('explica elegibilidad, prioridad y uso', () => {

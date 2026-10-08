@@ -12,7 +12,10 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Card } from '@/components/ui/Card'
-import { summarizeRequestStatuses } from '@/features/portfolio/utils/portfolio-analysis'
+import {
+  resolvedApprovalRate,
+  summarizeRequestStatuses,
+} from '@/features/portfolio/utils/portfolio-analysis'
 
 import { useTeamLeaderWorkspace } from '../hooks/useTeamLeaderWorkspace'
 
@@ -27,7 +30,7 @@ export function TeamAnalyticsPage() {
   const pending = statusSummary.inProgress
   const used = requests.filter((r) => r.status === 'USED').length
   const total = requests.length
-  const rate = total ? Math.round((approved / total) * 100) : 0
+  const rate = resolvedApprovalRate(requests)
   const byMember = (team?.members ?? []).map((member) => ({
     member,
     total: requests.filter((r) => r.requesterId === member.userId).length,
@@ -70,7 +73,7 @@ export function TeamAnalyticsPage() {
             icon={<CheckCircle2 />}
             label="Aprobadas"
             value={approved}
-            detail={`${rate}% del total`}
+            detail={`${rate}% de decisiones finales`}
             tone="green"
           />
           <Kpi
@@ -136,6 +139,9 @@ export function TeamAnalyticsPage() {
           </Card>
           <Card className="p-6">
             <h2 className="text-primary font-extrabold">Tasa de aprobación</h2>
+            <p className="text-muted-foreground mt-1 text-xs">
+              Aprobadas sobre decisiones finales; no mezcla solicitudes aún pendientes.
+            </p>
             <div className="mt-6 flex flex-col items-center gap-6 sm:flex-row">
               <div
                 className="grid size-44 place-items-center rounded-full"

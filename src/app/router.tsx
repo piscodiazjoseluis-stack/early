@@ -3,6 +3,7 @@ import { Navigate, createBrowserRouter, type RouteObject } from 'react-router-do
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
 import { PublicOnlyRoute } from '@/features/auth/components/PublicOnlyRoute'
 import { RoleRoute } from '@/features/auth/components/RoleRoute'
+import { REQUEST_OWNER_ROLES } from '@/features/auth/constants/role-permissions'
 import { RouteErrorPage } from '@/features/dashboard/pages/RouteErrorPage'
 import { RouteLoadingPage } from '@/features/dashboard/pages/RouteLoadingPage'
 
@@ -236,7 +237,7 @@ const routes: RouteObject[] = [
         ],
       },
       {
-        element: <RoleRoute allowedRoles={['COLLABORATOR']} />,
+        element: <RoleRoute allowedRoles={REQUEST_OWNER_ROLES} />,
         children: [
           {
             path: '/solicitudes',

@@ -47,19 +47,26 @@ import {
   portfolioPeople,
   recommendPortfolioCandidate,
   rejectedStatuses,
+  requestedFridayEvolution,
+  resolvedApprovalRate,
+  summarizeRequestStatuses,
   teamParticipation,
-  weeklyEvolution,
 } from '../utils/portfolio-analysis'
 
 type Tone = 'blue' | 'green' | 'red' | 'amber' | 'purple'
-const chartColors = ['#12ad69', '#ff5d67', '#ffb020']
+const chartColors = ['#12ad69', '#ff5d67', '#ffb020', '#94a3b8', '#8b5cf6']
 
 export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?: boolean }) {
   const [peopleModalOpen, setPeopleModalOpen] = useState(false)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [renderedAt] = useState(() => Date.now())
-  const query = useQuery({ queryKey: ['portfolio-workspace'], queryFn: getPortfolioWorkspace })
+  const query = useQuery({
+    queryKey: ['portfolio-workspace'],
+    queryFn: getPortfolioWorkspace,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+  })
   const allRequests = query.data?.requests ?? []
   const invalidDateRange = Boolean(dateFrom && dateTo && dateFrom > dateTo)
   const requests = invalidDateRange ? [] : filterPortfolioRequests(allRequests, dateFrom, dateTo)
@@ -77,12 +84,14 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
   const critical = requests.filter(
     (request) => request.status === 'PENDING_PORTFOLIO' && approvalSla(request).critical,
   )
-  const evolution = weeklyEvolution(requests)
+  const evolution = requestedFridayEvolution(requests)
+  const statusSummary = summarizeRequestStatuses(requests)
+  const approvalRate = resolvedApprovalRate(requests)
   const allTeamData = teams.map((team) => ({
     name: team.name.replace(/^Team\s+/i, ''),
     value: teamParticipation(team, requests),
   }))
-  const teamData = allTeamData.filter((team) => team.value > 0)
+  const teamData = allTeamData
   const personUsage = people
     .map((person) => ({
       ...person,
@@ -98,8 +107,16 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
     { name: 'Aprobadas', value: approved.length },
     { name: 'Rechazadas', value: rejected.length },
     { name: 'Pendientes', value: pending.length },
+    { name: 'Canceladas o vencidas', value: statusSummary.closedWithoutBenefit },
+    ...(statusSummary.unclassified
+      ? [{ name: 'Sin clasificar', value: statusSummary.unclassified }]
+      : []),
   ]
-  const classifiedTotal = stateData.reduce((sum, item) => sum + item.value, 0)
+  const decisionData = [
+    { name: 'Aprobadas', value: approved.length },
+    { name: 'Rechazadas', value: rejected.length },
+  ]
+  const resolvedTotal = approved.length + rejected.length
   const lowTeams = [...allTeamData]
     .sort((a, b) => a.value - b.value)
     .filter((team) => team.value < lowParticipationThreshold)
@@ -244,22 +261,22 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
               </ChartCard>
               <ChartCard
                 title="Tasa de aprobación"
-                subtitle="Aprobadas, rechazadas y pendientes sobre casos clasificados."
+                subtitle="Aprobadas sobre decisiones finales; excluye pendientes y canceladas."
               >
                 <DonutBreakdown
-                  data={stateData}
-                  center={`${ratio(approved.length, classifiedTotal)}%`}
+                  data={decisionData}
+                  center={`${approvalRate}%`}
                   centerLabel="Aprobación"
-                  total={classifiedTotal}
+                  total={resolvedTotal}
                 />
               </ChartCard>
               <ChartCard
-                title="Tendencia semanal de solicitudes"
-                subtitle="Solicitudes recibidas y decisiones finales por semana."
+                title="Solicitudes por viernes solicitado"
+                subtitle="Demanda y aprobaciones finales según la fecha solicitada del beneficio."
               >
                 <div className="mb-2 flex justify-end gap-4 text-[11px]">
-                  <Dot color="bg-electric-blue" label="Solicitudes" />
-                  <Dot color="bg-success" label="Aprobaciones" />
+                  <Dot color="bg-electric-blue" label="Solicitudes registradas" />
+                  <Dot color="bg-success" label="Aprobadas finalmente" />
                 </div>
                 <div className="h-[calc(100%-1.5rem)]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -267,6 +284,7 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
                       <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#dbe5f2" />
                       <XAxis
                         dataKey="label"
+                        interval="preserveStartEnd"
                         tick={{ fontSize: 9, fill: '#6b7b97' }}
                         tickMargin={10}
                       />
@@ -277,7 +295,7 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
                       />
                       <Tooltip />
                       <Line
-                        name="Solicitudes"
+                        name="Solicitudes registradas"
                         type="monotone"
                         dataKey="solicitudes"
                         stroke="#1769ff"
@@ -285,7 +303,7 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
                         dot={{ r: 3 }}
                       />
                       <Line
-                        name="Aprobaciones"
+                        name="Aprobadas finalmente"
                         type="monotone"
                         dataKey="aprobaciones"
                         stroke="#12ad69"
@@ -330,13 +348,13 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
               </ChartCard>
               <ChartCard
                 title="Distribución por estado"
-                subtitle="Aprobadas, rechazadas y pendientes; excluye canceladas."
+                subtitle="Conciliación completa de todas las solicitudes del período."
               >
                 <DonutBreakdown
                   data={stateData}
-                  center={String(classifiedTotal)}
+                  center={String(requests.length)}
                   centerLabel="Total"
-                  total={classifiedTotal}
+                  total={requests.length}
                 />
               </ChartCard>
               <Card className="flex min-h-[360px] flex-col p-5">
@@ -402,7 +420,7 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
             <Insight icon={<Lightbulb />} title="Hallazgo principal" tone="blue">
               {critical.length
                 ? `${critical.length} solicitudes de Portfolio superaron el SLA de 24 horas y requieren atención inmediata.`
-                : `La tasa de aprobación es ${ratio(approved.length, classifiedTotal)}% y no hay casos fuera del SLA.`}
+                : `La tasa de aprobación sobre decisiones finales es ${approvalRate}% y no hay casos fuera del SLA.`}
             </Insight>
             <Insight icon={<CheckCircle2 />} title="Recomendación semanal" tone="green">
               {recommendedCandidate
@@ -428,9 +446,10 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
             <div>
               <h2 className="text-primary font-extrabold">Cómo se generan estos insights</h2>
               <p className="text-muted-foreground mt-2 text-xs leading-5">
-                Actualmente son análisis determinísticos y auditables: estados reales, SLA de 24
-                horas, fechas, equipo y confirmación de uso. No se está invocando un modelo
-                generativo ni se inventan conclusiones.
+                Alcance: todo el portfolio ({teams.length} equipos visibles). Actualmente son
+                análisis determinísticos y auditables sobre datos reales de Supabase: estados,
+                SLA de 24 horas, fechas, equipo y confirmación de uso. No se está invocando un
+                modelo generativo ni se inventan conclusiones.
               </p>
             </div>
           </div>

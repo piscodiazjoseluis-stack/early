@@ -1,7 +1,6 @@
 import {
   Bell,
   CalendarDays,
-  CircleHelp,
   ClipboardCheck,
   FilePlus2,
   History,
@@ -17,7 +16,10 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useUnreadNotifications } from '@/features/collaborator/hooks/useUnreadNotifications'
 import { cn } from '@/lib/utils'
+import { SidebarFooter } from './SidebarFooter'
+import { SidebarBrandMedia } from './SidebarMedia'
 
 const collaboratorNavigation = [
   { label: 'Inicio', icon: House, path: '/panel', previewPath: '/sistema-visual' },
@@ -62,12 +64,6 @@ const collaboratorNavigation = [
     icon: Bell,
     path: '/notificaciones',
     previewPath: '/sistema-visual/notificaciones',
-  },
-  {
-    label: 'Reglas y ayuda',
-    icon: CircleHelp,
-    path: '/reglas-ayuda',
-    previewPath: '/sistema-visual/reglas-ayuda',
   },
 ]
 
@@ -121,12 +117,6 @@ const teamLeaderNavigation = [
     path: '/notificaciones',
     previewPath: '/sistema-visual/notificaciones',
   },
-  {
-    label: 'Reglas y ayuda',
-    icon: CircleHelp,
-    path: '/reglas-ayuda',
-    previewPath: '/sistema-visual/reglas-ayuda',
-  },
 ]
 
 const portfolioNavigation = [
@@ -163,18 +153,13 @@ const portfolioNavigation = [
     previewPath: '/excepciones-auditoria',
   },
   { label: 'Notificaciones', icon: Bell, path: '/notificaciones', previewPath: '/notificaciones' },
-  {
-    label: 'Reglas y ayuda',
-    icon: CircleHelp,
-    path: '/reglas-ayuda',
-    previewPath: '/reglas-ayuda',
-  },
 ]
 
 export function AppSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { access } = useAuth()
+  const unreadNotifications = useUnreadNotifications()
   const isPreview = location.pathname.startsWith('/sistema-visual')
   const isLeader =
     location.pathname.startsWith('/sistema-visual/jefe') ||
@@ -198,27 +183,26 @@ export function AppSidebar({ open, onClose }: { open: boolean; onClose: () => vo
       ) : null}
       <aside
         className={cn(
-          'border-sidebar-border fixed inset-y-0 left-0 z-40 flex w-[274px] flex-col overflow-y-auto border-r bg-white px-4 py-6 transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0',
+          'app-sidebar fixed inset-y-0 left-0 z-40 flex w-[276px] flex-col overflow-hidden border-r px-4 py-4 transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0',
           open ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="flex items-center justify-between px-2">
-          <img
-            src="/brand/early-fridays-logo.svg"
-            alt="Early Fridays PMO"
-            className="h-auto w-[184px] max-w-full lg:w-[220px]"
-          />
+        <div className="sidebar-brand-row flex shrink-0 items-start justify-between gap-2">
+          <SidebarBrandMedia />
           <button
             type="button"
             onClick={onClose}
-            className="text-muted-foreground grid size-9 place-items-center rounded-lg lg:hidden"
+            className="sidebar-close grid size-9 shrink-0 place-items-center rounded-lg lg:hidden"
             aria-label="Cerrar menú"
           >
             <X className="size-5" />
           </button>
         </div>
 
-        <nav aria-label="Navegación principal" className="mt-9 space-y-1.5">
+        <p className="mt-5 px-3 text-[10px] font-extrabold tracking-[0.18em] text-white/45 uppercase">
+          Espacio de trabajo
+        </p>
+        <nav aria-label="Navegación principal" className="sidebar-nav-scroll mt-2 space-y-1.5">
           {navigation.map(({ label, icon: Icon, path, previewPath }) => {
             const target = isPreview ? previewPath : path
             const active = target ? isNavigationActive(location.pathname, target) : false
@@ -226,30 +210,34 @@ export function AppSidebar({ open, onClose }: { open: boolean; onClose: () => vo
               <button
                 key={label}
                 type="button"
+                aria-current={active ? 'page' : undefined}
                 onClick={() => {
                   if (target) void navigate(target)
                   onClose()
                 }}
                 className={cn(
-                  'flex min-h-12 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-bold transition',
+                  'sidebar-nav-item flex min-h-11 w-full items-center gap-3 rounded-xl px-3.5 text-left text-[13px] font-bold',
                   active
-                    ? 'bg-primary text-white shadow-[0_8px_20px_rgb(10_42_102/18%)]'
-                    : 'text-muted-foreground hover:bg-info-soft hover:text-primary',
+                    ? 'sidebar-nav-item-active bg-primary'
+                    : 'sidebar-nav-item-idle',
                 )}
               >
-                <Icon className={cn('size-5', active ? 'text-white' : 'text-[#526688]')} />
-                {label}
+                <Icon className="size-5 shrink-0" aria-hidden="true" />
+                <span>{label}</span>
+                {label === 'Notificaciones' && unreadNotifications > 0 ? (
+                  <span
+                    className="sidebar-notification-count ml-auto"
+                    aria-label={`${unreadNotifications} notificaciones pendientes`}
+                  >
+                    {unreadNotifications}
+                  </span>
+                ) : null}
               </button>
             )
           })}
         </nav>
 
-        <img
-          src="/brand/sidebar-clock-clouds.png"
-          alt=""
-          className="mt-6 h-auto w-full object-contain object-bottom"
-          aria-hidden="true"
-        />
+        <SidebarFooter onNavigate={onClose} />
       </aside>
     </>
   )
