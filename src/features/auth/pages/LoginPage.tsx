@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
-import { AuthShell } from '../components/AuthShell'
+import { LoginShell } from '../components/LoginShell'
 import { useAuth } from '../hooks/useAuth'
 import { loginSchema, type LoginFormValues } from '../schemas/auth-schemas'
 
@@ -37,15 +37,18 @@ export function LoginPage() {
   }
 
   return (
-    <AuthShell>
-      <div className="mx-auto w-full max-w-lg">
-        <span className="bg-info-soft text-electric-blue inline-flex rounded-full px-3 py-1.5 text-[10px] font-extrabold tracking-[0.14em] uppercase">
+    <LoginShell>
+      <div className="login-content mx-auto w-full max-w-lg">
+        <span className="login-eyebrow bg-info-soft text-electric-blue inline-flex rounded-full px-3 py-1.5 text-[10px] font-extrabold tracking-[0.14em] uppercase">
           Portal corporativo
         </span>
-        <h1 className="text-primary-strong mt-5 text-4xl font-extrabold tracking-[-0.045em] sm:text-5xl">
+        <h1
+          id="login-heading"
+          className="text-primary-strong mt-5 text-4xl font-extrabold tracking-[-0.045em] sm:text-5xl"
+        >
           Bienvenido de nuevo
         </h1>
-        <p className="text-muted-foreground mt-4 max-w-md text-sm leading-6 sm:text-base">
+        <p className="login-intro text-muted-foreground mt-4 max-w-md text-sm leading-6 sm:text-base">
           Inicia sesión para gestionar tus Early Fridays, colaborar con tu equipo y planificar con
           transparencia.
         </p>
@@ -69,11 +72,16 @@ export function LoginPage() {
                 autoComplete="email"
                 placeholder="tucorreo@empresa.com"
                 aria-invalid={Boolean(errors.email)}
+                aria-describedby={errors.email ? 'email-error' : undefined}
                 className="border-border text-primary-strong hover:border-electric-blue/40 focus:border-electric-blue focus:ring-electric-blue/10 h-14 w-full rounded-2xl border bg-white pr-4 pl-12 shadow-[0_4px_18px_rgb(7_29_73/5%)] transition-[border-color,box-shadow] outline-none placeholder:text-[#99a6bc] focus:ring-4"
                 {...register('email')}
               />
             </div>
-            {errors.email && <p className="text-danger mt-2 text-sm">{errors.email.message}</p>}
+            {errors.email && (
+              <p id="email-error" className="text-danger mt-2 text-sm">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div className="group">
@@ -94,6 +102,7 @@ export function LoginPage() {
                 autoComplete="current-password"
                 placeholder="Ingresa tu contraseña"
                 aria-invalid={Boolean(errors.password)}
+                aria-describedby={errors.password ? 'password-error' : undefined}
                 className="border-border text-primary-strong hover:border-electric-blue/40 focus:border-electric-blue focus:ring-electric-blue/10 h-14 w-full rounded-2xl border bg-white pr-12 pl-12 shadow-[0_4px_18px_rgb(7_29_73/5%)] transition-[border-color,box-shadow] outline-none placeholder:text-[#99a6bc] focus:ring-4"
                 {...register('password')}
               />
@@ -107,7 +116,9 @@ export function LoginPage() {
               </button>
             </div>
             {errors.password && (
-              <p className="text-danger mt-2 text-sm">{errors.password.message}</p>
+              <p id="password-error" className="text-danger mt-2 text-sm">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
@@ -140,21 +151,21 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="from-primary to-electric-blue focus-visible:outline-electric-blue flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r px-5 font-extrabold text-white shadow-[0_12px_28px_rgb(23_107_255/24%)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_34px_rgb(23_107_255/32%)] focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
+            className="login-submit from-primary to-electric-blue focus-visible:outline-electric-blue flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r px-5 font-extrabold text-white shadow-[0_12px_28px_rgb(23_107_255/24%)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_34px_rgb(23_107_255/32%)] focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <LogIn className="size-5" aria-hidden="true" />
             {isSubmitting ? 'Iniciando sesión…' : 'Iniciar sesión'}
           </button>
         </form>
 
-        <div className="text-muted-foreground mt-9 flex items-center gap-4 text-sm">
+        <div className="login-support-title text-muted-foreground mt-9 flex items-center gap-4 text-sm">
           <span className="bg-border h-px flex-1" />
           ¿Necesitas ayuda?
           <span className="bg-border h-px flex-1" />
         </div>
         <a
           href="mailto:administrador@empresa.com"
-          className="text-electric-blue hover:text-primary focus-visible:outline-electric-blue group hover:bg-info-soft mx-auto mt-5 flex w-fit items-center justify-center gap-2 rounded-lg px-3 py-2 font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-4"
+          className="login-support-link text-electric-blue hover:text-primary focus-visible:outline-electric-blue group hover:bg-info-soft mx-auto mt-5 flex w-fit items-center justify-center gap-2 rounded-lg px-3 py-2 font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-4"
         >
           <Headphones
             className="size-5 transition-transform group-hover:scale-110 group-hover:-rotate-6"
@@ -163,6 +174,6 @@ export function LoginPage() {
           Contactar al administrador
         </a>
       </div>
-    </AuthShell>
+    </LoginShell>
   )
 }

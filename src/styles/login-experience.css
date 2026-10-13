@@ -1,0 +1,302 @@
+/* An extension of the approved identity, scoped exclusively to LoginShell. */
+.login-experience {
+  min-height: 100dvh;
+  background: #fff;
+  color: #152540;
+}
+.login-layout {
+  display: grid;
+  grid-template-columns: minmax(420px, 0.9fr) minmax(0, 1.1fr);
+  max-width: 1680px;
+  margin-inline: auto;
+  min-height: 100dvh;
+}
+.login-access {
+  padding: 38px clamp(32px, 5vw, 84px) 28px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.login-brand img {
+  width: 200px;
+  height: auto;
+}
+.login-form-region {
+  width: 100%;
+  max-width: 420px;
+  margin: auto;
+  padding-block: 44px;
+}
+.login-content {
+  width: 100%;
+}
+.login-experience .login-eyebrow {
+  display: block;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #536680;
+}
+.login-experience h1 {
+  margin-top: 14px;
+  font-size: clamp(30px, 2.65vw, 40px);
+  line-height: 1.14;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+  color: #071d49;
+}
+.login-experience .login-intro {
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #64728a;
+}
+.login-experience form {
+  margin-top: 30px;
+}
+.login-experience form label {
+  font-size: 13px;
+}
+.login-experience input:not([type='checkbox']) {
+  height: 52px;
+  border-radius: 12px;
+  border-color: #c8d5e5;
+  box-shadow: none;
+  background: #fbfdff;
+  font-size: 14px;
+}
+.login-experience input::placeholder {
+  color: #6a7890;
+}
+.login-experience input:not([type='checkbox']):hover {
+  border-color: #9bb8df;
+}
+.login-experience input:not([type='checkbox']):focus {
+  border-color: #176bff;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgb(23 107 255 / 12%);
+}
+.login-experience input[aria-invalid='true'] {
+  border-color: #df3f4d;
+}
+.login-experience .login-submit {
+  height: 52px;
+  border-radius: 12px;
+  background: #10336d;
+  box-shadow: 0 4px 10px rgb(7 29 73 / 8%);
+  font-size: 14px;
+  transition:
+    background-color 180ms,
+    box-shadow 180ms,
+    transform 180ms;
+}
+.login-experience .login-submit:hover {
+  background: #12468f;
+  box-shadow: 0 6px 14px rgb(7 29 73 / 12%);
+  transform: none;
+}
+.login-experience .login-submit:active {
+  transform: translateY(1px);
+}
+.login-experience .login-support-title {
+  margin-top: 28px;
+  font-size: 12px;
+}
+.login-experience .login-support-link {
+  margin-top: 10px;
+  font-size: 13px;
+  min-height: 44px;
+}
+.login-security {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #64728a;
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: center;
+}
+.login-security svg {
+  color: #10336d;
+  flex-shrink: 0;
+}
+.login-story {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 18px 18px 18px 0;
+  padding: 18px;
+  border-radius: 24px;
+  background: #edf4fc;
+}
+.login-film {
+  position: relative;
+  flex: 1;
+  min-height: 320px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #dce6f2 url('/brand/login-wellbeing-illustration.png') center / cover;
+}
+.login-film video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 80% center;
+}
+.login-playback {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #dce6f2;
+  border-radius: 12px;
+  background: #fff;
+  color: #10336d;
+  cursor: pointer;
+  transition: background-color 180ms;
+}
+.login-playback:hover {
+  background: #e7f0ff;
+}
+.login-playback:focus-visible {
+  outline: 3px solid #176bff;
+  outline-offset: 3px;
+}
+.login-story-copy {
+  padding: 24px 10px 0;
+}
+.login-story-copy h2 {
+  max-width: 500px;
+  font-size: clamp(23px, 2vw, 30px);
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+  color: #071d49;
+  text-wrap: balance;
+}
+.login-story-copy > p {
+  margin-top: 10px;
+  max-width: 490px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #536680;
+}
+.login-principles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 22px 10px 10px;
+  padding-top: 20px;
+  border-top: 1px solid #cbd9ec;
+  list-style: none;
+}
+.login-principles li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.login-principles svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #10336d;
+}
+.login-principles h3 {
+  color: #10336d;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.login-principles p {
+  margin-top: 5px;
+  color: #536680;
+  font-size: 10px;
+  line-height: 1.6;
+}
+@media (max-width: 1100px) {
+  .login-access {
+    padding: 28px 32px 24px;
+  }
+  .login-layout {
+    grid-template-columns: minmax(360px, 1fr) minmax(0, 1fr);
+  }
+  .login-principles {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .login-principles p {
+    margin-top: 0;
+  }
+  .login-principles li > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+  .login-story {
+    padding: 12px;
+  }
+}
+@media (max-width: 767px) {
+  .login-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .login-access {
+    padding: 24px;
+    min-height: min(780px, 100dvh);
+  }
+  .login-brand img {
+    width: 176px;
+  }
+  .login-form-region {
+    padding-block: 34px;
+    max-width: 440px;
+  }
+  .login-experience h1 {
+    font-size: 32px;
+  }
+  .login-experience .login-intro {
+    font-size: 13px;
+  }
+  .login-story {
+    margin: 0 16px 16px;
+    padding: 12px;
+  }
+  .login-film {
+    flex: auto;
+    aspect-ratio: 4 / 3;
+    min-height: 0;
+  }
+  .login-story-copy {
+    padding-top: 20px;
+  }
+  .login-story-copy h2 {
+    font-size: 25px;
+  }
+  .login-principles {
+    gap: 14px;
+  }
+  .login-principles h3 {
+    font-size: 12px;
+  }
+  .login-principles p {
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-experience *,
+  .login-experience *::before,
+  .login-experience *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .login-experience .login-submit:active {
+    transform: none;
+  }
+}
