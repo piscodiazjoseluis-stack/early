@@ -1,3 +1,4 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   CalendarDays,
@@ -9,7 +10,6 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
@@ -29,7 +29,7 @@ import {
 } from '../utils/request-status'
 
 export function MyRequestsPage({ preview = false }: { preview?: boolean }) {
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const queryClient = useQueryClient()
   const [query, setQuery] = useState('')
   const [cancelTarget, setCancelTarget] = useState<RequestView | null>(null)
@@ -71,8 +71,8 @@ export function MyRequestsPage({ preview = false }: { preview?: boolean }) {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1420px]">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="collab-page collab-requests-page mx-auto max-w-[1420px]">
+        <header className="collab-page-heading-legacy flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
               Mis solicitudes
@@ -92,7 +92,7 @@ export function MyRequestsPage({ preview = false }: { preview?: boolean }) {
         </header>
 
         <section
-          className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4"
+          className="collab-summary-strip mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4"
           aria-label="Resumen de solicitudes"
         >
           <SummaryCard label="Activas" value={requests.length} tone="info" />
@@ -149,7 +149,7 @@ export function MyRequestsPage({ preview = false }: { preview?: boolean }) {
           </div>
         </details>
 
-        <Card className="mt-5 overflow-hidden">
+        <Card className="collab-records-panel mt-5 overflow-hidden">
           <div className="border-border flex flex-col gap-4 border-b p-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <FileText className="text-electric-blue size-5" />

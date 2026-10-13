@@ -1,3 +1,4 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -16,12 +17,13 @@ import {
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useTeamLeaderExperience } from '@/features/approvals/hooks/useTeamLeaderExperience'
 import { getTeams } from '@/features/teams/services/team-service'
 import { cn } from '@/lib/utils'
 
@@ -99,8 +101,9 @@ const previewContext: RequestFormContext = {
 }
 
 export function NewRequestPage({ preview = false }: { preview?: boolean }) {
+  const leaderExperience = useTeamLeaderExperience()
   const { access } = useAuth()
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const [searchParams] = useSearchParams()
   const queryClient = useQueryClient()
   const [feedback, setFeedback] = useState<string | null>(null)
@@ -152,7 +155,9 @@ export function NewRequestPage({ preview = false }: { preview?: boolean }) {
   })
 
   const applicant = preview
-    ? { name: 'Jose Pisco', jobTitle: 'Project Analyst', initials: 'JP' }
+    ? leaderExperience
+      ? { name: 'Hugo Ramirez', jobTitle: 'Jefe directo / PMO', initials: 'HR' }
+      : { name: 'Jose Pisco', jobTitle: 'Project Analyst', initials: 'JP' }
     : {
         name: access?.profile.full_name ?? 'Usuario',
         jobTitle: access?.profile.job_title ?? 'Sin cargo registrado',
@@ -182,8 +187,8 @@ export function NewRequestPage({ preview = false }: { preview?: boolean }) {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1420px]">
-        <header className="mb-5">
+      <div className="collab-page collab-new-request-page mx-auto max-w-[1420px]">
+        <header className="collab-page-heading-legacy mb-5">
           <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
             Nueva solicitud de Early Friday
           </h1>

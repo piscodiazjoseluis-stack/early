@@ -5,12 +5,14 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useTeamLeaderExperience } from '@/features/approvals/hooks/useTeamLeaderExperience'
 import { getTeams } from '@/features/teams/services/team-service'
 import type { TeamMemberView } from '@/features/teams/types'
 
 import { collaboratorPreviewTeam } from '../data/collaborator-preview-data'
 
 export function MyTeamPage({ preview = false }: { preview?: boolean }) {
+  const leaderExperience = useTeamLeaderExperience()
   const { access } = useAuth()
   const teamsQuery = useQuery({
     queryKey: ['teams', 'my-team'],
@@ -24,12 +26,12 @@ export function MyTeamPage({ preview = false }: { preview?: boolean }) {
           item.leaderUserId === access?.profile.id ||
           item.members.some((member) => member.userId === access?.profile.id),
       )
-  const currentUserId = preview ? 'preview-jose' : access?.profile.id
+  const currentUserId = preview ? (leaderExperience ? 'hugo' : 'preview-jose') : access?.profile.id
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1120px]">
-        <header>
+      <div className="collab-page collab-team-page mx-auto max-w-[1120px]">
+        <header className="collab-page-heading-legacy">
           <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">Mi equipo</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             Consulta tu jefatura, integrantes y estado general de rotación.

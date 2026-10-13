@@ -1,3 +1,4 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import {
   ArrowRight,
   BookOpen,
@@ -8,7 +9,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Button } from '@/components/ui/Button'
@@ -34,14 +35,14 @@ const questions = [
 ]
 
 export function RulesHelpPage() {
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const location = useLocation()
   const preview = location.pathname.startsWith('/sistema-visual')
   const [open, setOpen] = useState(0)
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1120px]">
-        <header>
+      <div className="collab-page collab-rules-page mx-auto max-w-[1120px]">
+        <header className="collab-page-heading-legacy">
           <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
             Reglas y ayuda
           </h1>

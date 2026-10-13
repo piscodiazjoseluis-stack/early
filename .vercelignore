@@ -1,0 +1,13 @@
+.agents/
+.impeccable/
+evidencias/
+scripts/
+tests/
+test-results/
+playwright-report/
+.codex*/
+tmp/
+output/
+dist/
+.env*
+!.env.example

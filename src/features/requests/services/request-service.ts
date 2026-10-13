@@ -37,6 +37,19 @@ type RequestTrackingRow = {
   }>
 }
 
+type RequestTimelineRow = {
+  event_id: string
+  event_type: 'STATUS' | 'DECISION'
+  action: string
+  occurred_at: string
+  actor_name: string
+  from_status: RequestView['status'] | null
+  to_status: RequestView['status'] | null
+  approval_level: RequestView['approvalLevel'] | null
+  decision: NonNullable<RequestView['approvalHistory']>[number]['decision'] | null
+  comment: string | null
+}
+
 const requestSelection = `
   id,
   requester_user_id,
@@ -76,7 +89,7 @@ export async function getMyRequests(): Promise<RequestView[]> {
 }
 
 export async function getRequestById(requestId: string): Promise<RequestView> {
-  const [requestResult, trackingResult] = await Promise.all([
+  const [requestResult, trackingResult, timelineResult] = await Promise.all([
     supabase
       .from('early_friday_requests')
       .select(requestSelection)
@@ -84,14 +97,31 @@ export async function getRequestById(requestId: string): Promise<RequestView> {
       .is('deleted_at', null)
       .single(),
     supabase.rpc('get_my_request_tracking', { target_request: requestId }),
+    supabase.rpc('get_request_timeline', { target_request: requestId }),
   ])
 
   if (requestResult.error) throw requestResult.error
   if (trackingResult.error) throw trackingResult.error
-  return mergeTracking(
+  if (timelineResult.error) throw timelineResult.error
+  const request = mergeTracking(
     [mapRequest(requestResult.data as unknown as RequestQueryRow)],
     trackingResult.data as unknown as RequestTrackingRow[],
   )[0]
+  return {
+    ...request,
+    auditTrail: (timelineResult.data as unknown as RequestTimelineRow[]).map((event) => ({
+      id: event.event_id,
+      type: event.event_type,
+      action: event.action,
+      occurredAt: event.occurred_at,
+      actorName: event.actor_name,
+      fromStatus: event.from_status,
+      toStatus: event.to_status,
+      approvalLevel: event.approval_level,
+      decision: event.decision,
+      comment: event.comment,
+    })),
+  }
 }
 
 export async function getEligibility(userId: string, requestedDate: string) {
@@ -224,6 +254,8 @@ function translateRequestError(message: string) {
     'La hora propuesta debe ser anterior al límite del horario permitido',
     'Ya existe una solicitud activa para esa fecha',
     'La solicitud está fuera del plazo establecido',
+    'El beneficio fue utilizado el viernes anterior',
+    'No se permiten Early Fridays utilizados en viernes consecutivos',
   ]
   return (
     knownErrors.find((known) => message.includes(known)) ?? 'No pudimos completar la solicitud.'

@@ -7,13 +7,23 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useTeamLeaderExperience } from '@/features/approvals/hooks/useTeamLeaderExperience'
+import { usePortfolioExperience } from '@/features/portfolio/hooks/usePortfolioExperience'
 
 import { updateMyProfile } from '../services/collaborator-service'
 
 export function ProfilePage({ preview = false }: { preview?: boolean }) {
+  const leaderExperience = useTeamLeaderExperience()
+  const portfolioExperience = usePortfolioExperience()
   const { access, user, refreshAccess } = useAuth()
   const [fullName, setFullName] = useState(
-    preview ? 'Jose Pisco' : (access?.profile.full_name ?? ''),
+    preview
+      ? portfolioExperience
+        ? 'María Luisa Temoche'
+        : leaderExperience
+          ? 'Hugo Ramirez'
+          : 'Jose Pisco'
+      : (access?.profile.full_name ?? ''),
   )
   const [timezone, setTimezone] = useState(
     preview ? 'America/Lima' : (access?.profile.timezone ?? 'America/Lima'),
@@ -28,15 +38,31 @@ export function ProfilePage({ preview = false }: { preview?: boolean }) {
     onError: () => setFeedback('No pudimos actualizar tu perfil.'),
   })
   const jobTitle = preview
-    ? 'Practicante / PMO'
+    ? portfolioExperience
+      ? 'Portfolio Manager'
+      : leaderExperience
+        ? 'Jefe directo / PMO'
+        : 'Practicante / PMO'
     : (access?.profile.job_title ?? 'Sin cargo registrado')
-  const email = preview ? 'jose.pisco@empresa.com' : (user?.email ?? 'Correo no disponible')
-  const roles = preview ? ['COLLABORATOR'] : (access?.roles ?? [])
+  const email = preview
+    ? portfolioExperience
+      ? 'maria.temoche@empresa.com'
+      : leaderExperience
+        ? 'hugo.ramirez@empresa.com'
+        : 'jose.pisco@empresa.com'
+    : (user?.email ?? 'Correo no disponible')
+  const roles = preview
+    ? portfolioExperience
+      ? ['PORTFOLIO_MANAGER']
+      : leaderExperience
+        ? ['TEAM_LEADER']
+        : ['COLLABORATOR']
+    : (access?.roles ?? [])
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[960px]">
-        <header>
+      <div className="collab-page collab-profile-page mx-auto max-w-[960px]">
+        <header className="collab-page-heading-legacy">
           <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">Mi perfil</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             Revisa tu identidad corporativa, permisos y preferencias de sesión.

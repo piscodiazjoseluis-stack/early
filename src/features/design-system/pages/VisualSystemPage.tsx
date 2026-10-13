@@ -2,27 +2,28 @@ import { useQuery } from '@tanstack/react-query'
 import {
   ArrowRight,
   CalendarCheck,
-  CalendarDays,
   Check,
   CheckCircle2,
-  Clock3,
-  FileText,
   ShieldCheck,
   UsersRound,
   Zap,
 } from 'lucide-react'
-import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
-import { Card, CardHeader } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { getMyTeamWeeklyAssignment } from '@/features/collaborator/services/collaborator-service'
 import { requestPreviewData } from '@/features/requests/data/request-preview-data'
 import { getEligibility, getMyRequests } from '@/features/requests/services/request-service'
 import type { RequestView } from '@/features/requests/types'
 import { requestStatusPresentation } from '@/features/requests/utils/request-status'
+import {
+  isActiveRequest,
+  isUsageConfirmationDue,
+  requestStageSummary,
+} from '@/features/requests/utils/request-status'
 import { getTeams } from '@/features/teams/services/team-service'
 
 const previewRecentRequests = requestPreviewData.slice(0, 4)
@@ -71,331 +72,257 @@ export function VisualSystemPage({ preview = false }: { preview?: boolean }) {
       }
     : assignmentQuery.data?.assignment
 
+  const activeRequests = dashboardRequests.filter((request) => isActiveRequest(request.status))
+  const correctionRequest = activeRequests.find(
+    (request) => request.status === 'RETURNED_FOR_CORRECTION',
+  )
+  const usageRequest = activeRequests.find(
+    (request) =>
+      request.status === 'FINAL_APPROVED' &&
+      isUsageConfirmationDue(request.requestedDate, request.endTime),
+  )
+  const priorityRequest = correctionRequest ?? usageRequest ?? activeRequests[0]
+  const firstName = preview
+    ? 'Jose'
+    : (access?.profile.full_name?.trim().split(/\s+/)[0] ?? 'Colaborador')
+  const primaryActionLabel = correctionRequest
+    ? 'Corregir solicitud'
+    : usageRequest
+      ? 'Confirmar uso'
+      : 'Crear solicitud'
+  const primaryActionPath = priorityRequest
+    ? preview
+      ? `/sistema-visual/solicitudes/${priorityRequest.id}`
+      : `/solicitudes/${priorityRequest.id}`
+    : preview
+      ? '/sistema-visual/solicitudes/nueva'
+      : '/solicitudes/nueva'
+
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1420px]">
-        <section
-          aria-label="Indicadores principales"
-          className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
-        >
-          <MetricCard
-            title="Estado de elegibilidad"
-            icon={<CheckCircle2 className="size-6" />}
-            accent={eligible ? 'success' : 'blue'}
-            value={
-              eligibilityQuery.isLoading && !preview
-                ? 'Evaluando...'
-                : eligible
-                  ? 'Eres elegible'
-                  : 'Requiere revisión'
-            }
-            detail={
-              preview
-                ? 'Cumples con todos los requisitos para acceder al beneficio.'
-                : eligible
-                  ? 'Cumples con los requisitos actuales para la próxima fecha.'
-                  : 'Consulta las validaciones antes de solicitar.'
-            }
-            action="Ver detalles"
+      <div className="collab-dashboard mx-auto max-w-[1420px]">
+        <header className="collab-page-heading">
+          <div>
+            <h1>Hola, {firstName}</h1>
+            <p>Revisa tu próxima acción y el avance de tus solicitudes.</p>
+          </div>
+          <button
+            type="button"
+            className="collab-quiet-link"
             onClick={() =>
-              void navigate(preview ? '/sistema-visual/elegibilidad' : '/elegibilidad')
+              void navigate(preview ? '/sistema-visual/reglas-ayuda' : '/reglas-ayuda')
             }
-          />
-          <MetricCard
-            title="Último Early utilizado"
-            icon={<CalendarDays className="size-6" />}
-            accent="blue"
-            value={
-              preview
-                ? 'vie, 09 may 2025'
-                : latestUsed
-                  ? formatShortDate(latestUsed.requestedDate)
-                  : 'Sin registros'
-            }
-            detail={
-              preview
-                ? 'Aprobado por Hugo Ramirez'
-                : latestUsed
-                  ? approvalSummary(latestUsed)
-                  : 'Todavía no registras beneficios utilizados.'
-            }
-            action="Ver historial"
-            onClick={() => void navigate(preview ? '/sistema-visual/historial' : '/historial')}
-          />
-          <MetricCard
-            title="Total utilizados en el período"
-            icon={<span className="text-3xl font-extrabold">2</span>}
-            accent="blue"
-            value={
-              <span className="flex items-baseline gap-2">
-                <span className="text-electric-blue text-4xl font-extrabold">
-                  {preview ? 2 : usedRequests.length}
-                </span>
-                <span className="text-muted-foreground text-sm font-bold">de 6</span>
-              </span>
-            }
-            detail={
-              preview
-                ? 'Período: may 2025 – abr 2026'
-                : 'Solo se contabilizan beneficios confirmados como utilizados.'
-            }
-            action="Ver detalle del período"
-            hideIcon
-            onClick={() => void navigate(preview ? '/sistema-visual/historial' : '/historial')}
-          />
-          <MetricCard
-            title="Próxima oportunidad"
-            icon={<Clock3 className="size-6" />}
-            accent="blue"
-            value={formatShortDate(nextFriday)}
-            detail="Sujeto a elegibilidad y cupos."
-            action="Ver mi elegibilidad"
-            onClick={() =>
-              void navigate(preview ? '/sistema-visual/elegibilidad' : '/elegibilidad')
-            }
-          />
-        </section>
+          >
+            Consultar reglas <ArrowRight className="size-4" aria-hidden="true" />
+          </button>
+        </header>
 
-        <section className="mt-4 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-          <Card className="flex h-full flex-col p-5 sm:p-6">
-            <CardHeader
-              title={`Mi equipo: ${preview ? 'Team Hugo Ramirez' : (currentTeam?.name ?? 'Sin equipo asignado')}`}
-              description={`Jefe de equipo: ${preview ? 'Hugo Ramirez' : (currentTeam?.leaderName ?? 'Por asignar')}`}
-              icon={<UsersRound className="size-5" />}
-            />
-            <div className="mt-5 space-y-2.5">
-              {preview ? (
-                <>
-                  <TeamMember
-                    initials="HR"
-                    name="Hugo Ramirez"
-                    role="Project Analyst"
-                    badge="Jefe de equipo"
-                  />
-                  <TeamMember initials="JP" name="Jose Pisco" role="Practicante / PMO" badge="Tú" />
-                  <TeamMember
-                    initials="VC"
-                    name="Valeria Cabrera"
-                    role="Practicante / PMO"
-                    presence="away"
-                  />
-                </>
-              ) : (
-                currentTeam?.members.map((member) => (
-                  <TeamMember
-                    key={member.membershipId}
-                    initials={member.fullName
-                      .split(' ')
-                      .slice(0, 2)
-                      .map((part) => part[0])
-                      .join('')}
-                    name={member.fullName}
-                    role={member.jobTitle}
-                    badge={
-                      member.userId === currentTeam.leaderUserId
-                        ? 'Jefe de equipo'
-                        : member.userId === access?.profile.id
-                          ? 'Tú'
-                          : undefined
-                    }
-                  />
-                ))
-              )}
-              {!preview && !teamsQuery.isLoading && !currentTeam ? (
-                <p className="text-muted-foreground py-5 text-center text-xs">
-                  Aún no tienes un equipo activo asignado.
-                </p>
-              ) : null}
+        <section className="collab-command-panel" aria-labelledby="collab-command-title">
+          <div className="collab-command-copy">
+            <span className={`collab-command-symbol ${eligible ? 'is-success' : 'is-warning'}`}>
+              {eligible ? <CheckCircle2 aria-hidden="true" /> : <ShieldCheck aria-hidden="true" />}
+            </span>
+            <div>
+              <h2 id="collab-command-title">
+                {correctionRequest
+                  ? 'Tienes una solicitud por corregir'
+                  : usageRequest
+                    ? 'Confirma si utilizaste tu Early Friday'
+                    : eligible
+                      ? 'Estás listo para solicitar'
+                      : 'Revisa tu elegibilidad antes de solicitar'}
+              </h2>
+              <p>
+                {correctionRequest
+                  ? 'El flujo está pausado hasta que revises la observación y reenvíes la solicitud.'
+                  : usageRequest
+                    ? 'La aprobación ya terminó. Falta registrar el uso real del beneficio.'
+                    : `La próxima fecha disponible es ${formatShortDate(nextFriday)}.`}
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={() => void navigate(preview ? '/sistema-visual/mi-equipo' : '/mi-equipo')}
-              className="text-electric-blue group mt-auto flex items-center gap-1.5 pt-4 text-xs font-extrabold"
-            >
-              Ver todo el equipo
-              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-            </button>
-          </Card>
-
-          <Card className="flex h-full flex-col p-5 sm:p-6">
-            <CardHeader
-              title="Early Friday asignado para esta semana"
-              icon={<CalendarCheck className="size-5" />}
-            />
-            <div className="border-border hover:border-electric-blue/30 mt-5 grid overflow-hidden rounded-2xl border transition sm:grid-cols-[128px_1fr]">
-              <div className="border-border bg-info-soft/40 grid place-items-center border-b p-5 text-center sm:border-r sm:border-b-0">
-                <p className="text-electric-blue text-xs font-extrabold">VIERNES</p>
-                <p className="text-electric-blue my-1 text-5xl font-extrabold">
-                  {new Date(
-                    `${assignment?.date ?? assignmentQuery.data?.date ?? nextFriday}T12:00:00`,
-                  ).getDate()}
-                </p>
-                <p className="text-electric-blue text-xs font-bold">
-                  {formatMonthYear(assignment?.date ?? assignmentQuery.data?.date ?? nextFriday)}
-                </p>
-              </div>
-              <div className="flex items-center gap-4 p-5">
-                {assignment ? (
-                  <PresenceAvatar
-                    initials={getInitials(assignment.person_name)}
-                    tone="coral"
-                    presence="away"
-                  />
-                ) : (
-                  <CalendarCheck className="text-electric-blue size-9" />
-                )}
-                <div>
-                  <p className="text-primary font-extrabold">
-                    {assignment?.person_name ?? 'Sin asignación confirmada'}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    {assignment?.person_job_title ??
-                      'El cupo semanal todavía no tiene una aprobación final.'}
-                  </p>
-                  {assignment ? (
-                    <>
-                      <Badge tone="success" className="mt-3">
-                        <CheckCircle2 className="size-3.5" />
-                        Aprobado
-                      </Badge>
-                      <p className="text-muted-foreground mt-2 max-w-[270px] text-xs leading-5">
-                        {assignment.approved_by_name && assignment.approved_at
-                          ? `Aprobado por ${assignment.approved_by_name} el ${formatDateTime(assignment.approved_at)}.`
-                          : 'Aprobación final registrada.'}
-                      </p>
-                    </>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => void navigate(preview ? '/sistema-visual/calendario' : '/mi-equipo')}
-              className="text-electric-blue group mt-auto flex items-center gap-1.5 pt-4 text-xs font-extrabold"
-            >
-              {preview ? 'Ver detalles' : 'Ver mi equipo'}
-              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-            </button>
-          </Card>
-        </section>
-
-        <section className="mt-4 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-          <Card className="overflow-hidden">
-            <div className="p-5 sm:p-6">
-              <CardHeader
-                title="Mis solicitudes recientes"
-                icon={<FileText className="size-5" />}
-                action={
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void navigate(preview ? '/sistema-visual/solicitudes' : '/solicitudes')
-                    }
-                    className="text-electric-blue hover:text-primary rounded-lg px-2 py-1 text-xs font-extrabold transition-colors"
-                  >
-                    Ver todas
-                  </button>
-                }
-              />
+          </div>
+          <button
+            type="button"
+            className="collab-primary-action"
+            onClick={() => void navigate(primaryActionPath, { state: { from: 'dashboard' } })}
+          >
+            {primaryActionLabel} <ArrowRight className="size-4" aria-hidden="true" />
+          </button>
+          <dl className="collab-command-facts">
+            <div>
+              <dt>Solicitudes activas</dt>
+              <dd>{activeRequests.length}</dd>
             </div>
             <div>
-              <table className="w-full table-fixed text-left text-[11px] sm:text-xs lg:text-sm">
-                <thead className="bg-background/70 text-primary text-xs">
-                  <tr>
-                    <th className="w-[21%] px-3 py-3 font-extrabold sm:px-4">Fecha</th>
-                    <th className="w-[25%] px-3 py-3 font-extrabold sm:px-4">Fecha solicitada</th>
-                    <th className="w-[21%] px-3 py-3 font-extrabold sm:px-4">Estado</th>
-                    <th className="w-[27%] px-3 py-3 font-extrabold sm:px-4">
-                      Responsable / decisión
-                    </th>
-                    <th className="w-[6%] px-1 py-3">
-                      <span className="sr-only">Detalle</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-border divide-y">
-                  {recentRequests.map((request) => (
-                    <tr
-                      key={request.id}
-                      role="link"
-                      aria-label={`Ver seguimiento de la solicitud del ${formatCompactDate(request.requestedDate)}`}
-                      onClick={() =>
-                        void navigate(
-                          preview
-                            ? `/sistema-visual/solicitudes/${request.id}`
-                            : `/solicitudes/${request.id}`,
-                          { state: { from: 'requests' } },
-                        )
-                      }
-                      tabIndex={0}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') event.currentTarget.click()
-                      }}
-                      className="hover:bg-info-soft/50 group cursor-pointer transition-colors"
-                    >
-                      <td className="text-primary px-3 py-3 font-bold sm:px-4">
-                        {formatCompactDate(request.createdAt)}
-                      </td>
-                      <td className="text-muted-foreground px-3 py-3 sm:px-4">
-                        {formatCompactDate(request.requestedDate)}
-                      </td>
-                      <td className="px-3 py-3 sm:px-4">
-                        <Badge tone={requestStatusPresentation[request.status].tone}>
-                          {requestStatusPresentation[request.status].label}
-                        </Badge>
-                      </td>
-                      <td className="text-muted-foreground px-3 py-3 sm:px-4">
-                        {approvalActor(request)}
-                      </td>
-                      <td className="px-1 py-3">
-                        <ArrowRight className="text-muted-foreground group-hover:text-electric-blue size-4 transition-transform group-hover:translate-x-1" />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <dt>Usos confirmados</dt>
+              <dd>{preview ? 2 : usedRequests.length}</dd>
             </div>
-          </Card>
+            <div>
+              <dt>Último uso</dt>
+              <dd>
+                {preview
+                  ? '09 may.'
+                  : latestUsed
+                    ? formatCompactDate(latestUsed.requestedDate)
+                    : 'Sin uso'}
+              </dd>
+            </div>
+          </dl>
+        </section>
 
-          <Card className="p-5 sm:p-6">
-            <CardHeader title="Acciones rápidas" icon={<Zap className="size-5 fill-current" />} />
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <QuickAction
-                icon={<CalendarDays />}
-                title="Solicitar Early Friday"
-                description="Nueva solicitud"
-                onClick={() =>
-                  void navigate(
-                    preview ? '/sistema-visual/solicitudes/nueva' : '/solicitudes/nueva',
-                  )
-                }
-              />
-              <QuickAction
-                icon={<CalendarCheck />}
-                title="Ver mi calendario"
-                onClick={() =>
-                  void navigate(preview ? '/sistema-visual/calendario' : '/calendario')
-                }
-                description="Próximos eventos"
-              />
-              <QuickAction
-                icon={<FileText />}
-                title="Mis solicitudes"
-                description="Procesos activos"
+        <section className="collab-dashboard-grid">
+          <Card className="collab-request-stream">
+            <div className="collab-section-heading">
+              <div>
+                <h2>Solicitudes recientes</h2>
+                <p>Cada registro muestra la etapa y quién tiene la siguiente decisión.</p>
+              </div>
+              <button
+                type="button"
+                className="collab-quiet-link"
                 onClick={() =>
                   void navigate(preview ? '/sistema-visual/solicitudes' : '/solicitudes')
                 }
-              />
-              <QuickAction
-                icon={<ShieldCheck />}
-                title="Ver mi elegibilidad"
-                onClick={() =>
-                  void navigate(preview ? '/sistema-visual/elegibilidad' : '/elegibilidad')
-                }
-                description="Requisitos y estado"
-              />
+              >
+                Ver todas <ArrowRight className="size-4" aria-hidden="true" />
+              </button>
+            </div>
+            <div className="collab-request-list">
+              {recentRequests.map((request) => {
+                const stage = requestStageSummary(request)
+                const presentation = requestStatusPresentation[request.status]
+                return (
+                  <button
+                    key={request.id}
+                    type="button"
+                    className="collab-request-item"
+                    onClick={() =>
+                      void navigate(
+                        preview
+                          ? `/sistema-visual/solicitudes/${request.id}`
+                          : `/solicitudes/${request.id}`,
+                        { state: { from: 'dashboard' } },
+                      )
+                    }
+                  >
+                    <span className="collab-date-block">
+                      <strong>{new Date(`${request.requestedDate}T12:00:00`).getDate()}</strong>
+                      <span>{formatMonthYear(request.requestedDate)}</span>
+                    </span>
+                    <span className="collab-request-copy">
+                      <strong>{request.reason || 'Solicitud de Early Friday'}</strong>
+                      <span>
+                        {stage.stage} · {approvalActor(request)}
+                      </span>
+                    </span>
+                    <Badge tone={presentation.tone}>{presentation.label}</Badge>
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </button>
+                )
+              })}
             </div>
           </Card>
+
+          <div className="collab-dashboard-side">
+            <Card className="collab-week-card">
+              <div className="collab-section-heading is-compact">
+                <div>
+                  <h2>Asignación del equipo</h2>
+                </div>
+                <CalendarCheck className="size-5" aria-hidden="true" />
+              </div>
+              <div className="collab-week-assignment">
+                <div className="collab-week-date">
+                  <strong>
+                    {new Date(
+                      `${assignment?.date ?? assignmentQuery.data?.date ?? nextFriday}T12:00:00`,
+                    ).getDate()}
+                  </strong>
+                  <span>
+                    {formatMonthYear(assignment?.date ?? assignmentQuery.data?.date ?? nextFriday)}
+                  </span>
+                </div>
+                <div>
+                  <p>{assignment?.person_name ?? 'Sin asignación confirmada'}</p>
+                  <span>
+                    {assignment?.person_job_title ?? 'El cupo aún no tiene aprobación final.'}
+                  </span>
+                  {assignment ? <Badge tone="success">Aprobado</Badge> : null}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="collab-quiet-link"
+                onClick={() =>
+                  void navigate(preview ? '/sistema-visual/calendario' : '/calendario')
+                }
+              >
+                Abrir calendario <ArrowRight className="size-4" aria-hidden="true" />
+              </button>
+            </Card>
+
+            <Card className="collab-team-card">
+              <div className="collab-section-heading is-compact">
+                <div>
+                  <h2>{preview ? 'Team Hugo Ramirez' : (currentTeam?.name ?? 'Mi equipo')}</h2>
+                  <p>
+                    Jefe directo:{' '}
+                    {preview ? 'Hugo Ramirez' : (currentTeam?.leaderName ?? 'Por asignar')}
+                  </p>
+                </div>
+                <UsersRound className="size-5" aria-hidden="true" />
+              </div>
+              <div className="collab-team-stack">
+                {preview ? (
+                  <>
+                    <TeamMember
+                      initials="HR"
+                      name="Hugo Ramirez"
+                      role="Project Analyst"
+                      badge="Jefe"
+                    />
+                    <TeamMember
+                      initials="JP"
+                      name="Jose Pisco"
+                      role="Practicante / PMO"
+                      badge="Tú"
+                    />
+                    <TeamMember
+                      initials="VC"
+                      name="Valeria Cabrera"
+                      role="Practicante / PMO"
+                      presence="away"
+                    />
+                  </>
+                ) : (
+                  currentTeam?.members
+                    .slice(0, 3)
+                    .map((member) => (
+                      <TeamMember
+                        key={member.membershipId}
+                        initials={getInitials(member.fullName)}
+                        name={member.fullName}
+                        role={member.jobTitle}
+                        badge={
+                          member.userId === access?.profile.id
+                            ? 'Tú'
+                            : member.userId === currentTeam.leaderUserId
+                              ? 'Jefe'
+                              : undefined
+                        }
+                      />
+                    ))
+                )}
+              </div>
+              <button
+                type="button"
+                className="collab-quiet-link"
+                onClick={() => void navigate(preview ? '/sistema-visual/mi-equipo' : '/mi-equipo')}
+              >
+                Ver mi equipo <ArrowRight className="size-4" aria-hidden="true" />
+              </button>
+            </Card>
+          </div>
         </section>
 
         <footer className="border-border text-muted-foreground mt-6 flex flex-col items-center justify-center gap-3 border-t py-5 text-xs sm:flex-row sm:gap-10">
@@ -416,60 +343,6 @@ export function VisualSystemPage({ preview = false }: { preview?: boolean }) {
 
 export function VisualSystemPreviewPage() {
   return <VisualSystemPage preview />
-}
-
-function MetricCard({
-  title,
-  icon,
-  accent,
-  value,
-  detail,
-  action,
-  onClick,
-  hideIcon = false,
-}: {
-  title: string
-  icon: ReactNode
-  accent: 'blue' | 'success'
-  value: ReactNode
-  detail: string
-  action: string
-  onClick?: () => void
-  hideIcon?: boolean
-}) {
-  const accentClass =
-    accent === 'success' ? 'text-success bg-success-soft' : 'text-electric-blue bg-info-soft'
-
-  return (
-    <Card className="flex min-h-[218px] flex-col p-5 sm:p-6">
-      <h2 className="text-primary text-sm font-extrabold">{title}</h2>
-      <div className="mt-5 flex items-center gap-3">
-        {!hideIcon ? (
-          <span className={`grid size-11 shrink-0 place-items-center rounded-full ${accentClass}`}>
-            {icon}
-          </span>
-        ) : null}
-        <div
-          className={
-            accent === 'success'
-              ? 'text-success font-extrabold'
-              : 'text-primary text-lg font-extrabold'
-          }
-        >
-          {value}
-        </div>
-      </div>
-      <p className="text-muted-foreground mt-4 text-xs leading-5">{detail}</p>
-      <button
-        type="button"
-        onClick={onClick}
-        className="text-electric-blue group mt-auto flex items-center gap-1 pt-4 text-left text-xs font-extrabold"
-      >
-        {action}
-        <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-      </button>
-    </Card>
-  )
 }
 
 function PresenceAvatar({
@@ -530,33 +403,6 @@ function TeamMember({
   )
 }
 
-function QuickAction({
-  icon,
-  title,
-  description,
-  onClick,
-}: {
-  icon: ReactNode
-  title: string
-  description: string
-  onClick?: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="border-border hover:border-electric-blue hover:shadow-soft group flex min-h-20 items-center gap-3 rounded-xl border p-4 text-left transition hover:-translate-y-0.5"
-    >
-      <span className="text-electric-blue [&>svg]:size-6">{icon}</span>
-      <span className="min-w-0">
-        <span className="text-primary block truncate text-xs font-extrabold">{title}</span>
-        <span className="text-muted-foreground mt-1 block text-[11px]">{description}</span>
-      </span>
-      <ArrowRight className="text-muted-foreground group-hover:text-electric-blue ml-auto size-4 shrink-0 transition-transform group-hover:translate-x-1" />
-    </button>
-  )
-}
-
 function getUpcomingFriday() {
   const date = new Date()
   date.setHours(12, 0, 0, 0)
@@ -594,17 +440,6 @@ function formatMonthYear(date: string) {
   return new Intl.DateTimeFormat('es-PE', { month: 'short', year: 'numeric' })
     .format(new Date(`${date}T12:00:00`))
     .toUpperCase()
-}
-
-function formatDateTime(date: string) {
-  return new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short' }).format(
-    new Date(date),
-  )
-}
-
-function approvalSummary(request: RequestView) {
-  const approval = request.approvalHistory?.findLast((item) => item.decision === 'APPROVED')
-  return approval ? `Aprobado por ${approval.approverName}` : 'Aprobación final completada'
 }
 
 function approvalActor(request: RequestView) {

@@ -1031,6 +1031,33 @@ export type Database = {
       }
     }
     Functions: {
+      admin_assign_role: {
+        Args: { target_role: Database['public']['Enums']['app_role']; target_user: string }
+        Returns: Database['public']['Tables']['user_roles']['Row']
+      }
+      admin_update_profile: {
+        Args: {
+          target_full_name: string
+          target_is_active: boolean
+          target_job_title: string
+          target_user: string
+        }
+        Returns: Database['public']['Tables']['profiles']['Row']
+      }
+      admin_update_person: {
+        Args: {
+          target_full_name: string
+          target_is_active: boolean
+          target_job_title: string
+          target_role: Database['public']['Enums']['app_role']
+          target_user: string
+        }
+        Returns: Database['public']['Tables']['profiles']['Row']
+      }
+      admin_update_setting: {
+        Args: { target_key: string; target_value: Json }
+        Returns: Database['public']['Tables']['system_settings']['Row']
+      }
       approve_cancellation: { Args: { target_request: string }; Returns: Json }
       approve_request_as_portfolio: {
         Args: { target_request: string }
@@ -1117,9 +1144,32 @@ export type Database = {
           team_leader_name: string
         }[]
       }
+      get_request_timeline: {
+        Args: { target_request: string }
+        Returns: {
+          action: string
+          actor_name: string
+          approval_level: Database['public']['Enums']['approval_level'] | null
+          comment: string | null
+          decision: Database['public']['Enums']['approval_decision'] | null
+          event_id: string
+          event_type: string
+          from_status: string | null
+          occurred_at: string
+          to_status: string | null
+        }[]
+      }
       get_my_team_weekly_assignment: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      generate_ai_recommendation: {
+        Args: {
+          target_date?: string | null
+          target_scope: Database['public']['Enums']['ai_scope_type']
+          target_team?: string | null
+        }
+        Returns: Database['public']['Tables']['ai_recommendations']['Row']
       }
       reject_request: {
         Args: {

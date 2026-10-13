@@ -21,23 +21,24 @@ function renderPage() {
 }
 
 describe('VisualSystemPage', () => {
-  it('muestra los patrones principales del sistema visual', () => {
+  it('prioriza la siguiente acción y mantiene visible el seguimiento', () => {
     renderPage()
 
-    expect(screen.getByText('Estado de elegibilidad')).toBeInTheDocument()
-    expect(screen.getByRole('table')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Hola, Jose' })).toBeInTheDocument()
     expect(
-      screen.getByText('Cumples con todos los requisitos para acceder al beneficio.'),
+      screen.getByRole('heading', { name: 'Tienes una solicitud por corregir' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('Ver todo el equipo')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Corregir solicitud/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Solicitudes recientes' })).toBeInTheDocument()
   })
 
-  it('incluye estados de presencia y detalles de las acciones rápidas', () => {
+  it('incluye estados de presencia y contexto operativo del equipo', () => {
     renderPage()
 
     expect(screen.getAllByLabelText('Disponible')).not.toHaveLength(0)
-    expect(screen.getByText('Nueva solicitud')).toBeInTheDocument()
-    expect(screen.getByText('Próximos eventos')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Asignación del equipo' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Team Hugo Ramirez' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Abrir calendario/i })).toBeInTheDocument()
     expect(screen.queryByText('Componentes y estados')).not.toBeInTheDocument()
   })
 })

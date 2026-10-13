@@ -1,3 +1,4 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   AlertTriangle,
@@ -7,11 +8,12 @@ import {
   ChevronDown,
   Clock3,
   FileText,
+  History,
   ShieldCheck,
   UsersRound,
 } from 'lucide-react'
 import { useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
@@ -34,7 +36,7 @@ type TimelineItem = {
 
 export function RequestDetailPage({ preview = false }: { preview?: boolean }) {
   const { requestId = '' } = useParams()
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
   const [expandedStep, setExpandedStep] = useState<number | null>(null)
@@ -83,7 +85,7 @@ export function RequestDetailPage({ preview = false }: { preview?: boolean }) {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1280px]">
+      <div className="collab-page collab-request-detail-page mx-auto max-w-[1280px]">
         <Button variant="ghost" onClick={() => void navigate(returnTarget.path)}>
           <ArrowLeft className="size-4" />
           {returnTarget.label}
@@ -221,6 +223,41 @@ export function RequestDetailPage({ preview = false }: { preview?: boolean }) {
             </div>
           </Card>
         </div>
+        {request.auditTrail?.length ? (
+          <Card className="mt-5 p-5 sm:p-6">
+            <CardHeader title="Historial verificable" icon={<History className="size-5" />} />
+            <p className="text-muted-foreground mt-2 text-xs">
+              Eventos registrados por Supabase, ordenados desde la creación hasta la última decisión
+              disponible.
+            </p>
+            <ol className="border-border mt-5 divide-y rounded-2xl border">
+              {request.auditTrail.map((event) => (
+                <li key={event.id} className="grid gap-2 p-4 sm:grid-cols-[170px_minmax(0,1fr)]">
+                  <div>
+                    <p className="text-primary text-xs font-extrabold">{event.actorName}</p>
+                    <time className="text-muted-foreground mt-1 block text-[11px]">
+                      {formatDateTime(event.occurredAt)}
+                    </time>
+                  </div>
+                  <div>
+                    <p className="text-primary text-sm font-bold">
+                      {event.type === 'DECISION'
+                        ? event.decision
+                          ? decisionLabel(event.decision)
+                          : 'Decisión registrada'
+                        : event.fromStatus && event.toStatus
+                          ? `${requestStatusPresentation[event.fromStatus].label} → ${requestStatusPresentation[event.toStatus].label}`
+                          : event.comment}
+                    </p>
+                    {event.type === 'DECISION' || !event.fromStatus || !event.toStatus ? (
+                      <p className="text-muted-foreground mt-1 text-xs">{event.comment}</p>
+                    ) : null}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </Card>
+        ) : null}
       </div>
       <Modal
         open={usageModalOpen}

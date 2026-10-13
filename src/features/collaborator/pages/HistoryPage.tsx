@@ -1,7 +1,7 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import { useQuery } from '@tanstack/react-query'
 import { CalendarCheck, CheckCircle2, ChevronRight, History, XCircle } from 'lucide-react'
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
@@ -17,7 +17,7 @@ import {
 } from '@/features/requests/utils/request-status'
 
 export function HistoryPage({ preview = false }: { preview?: boolean }) {
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const requestsQuery = useQuery({
     queryKey: ['my-requests', 'history'],
     queryFn: getMyRequests,
@@ -34,8 +34,8 @@ export function HistoryPage({ preview = false }: { preview?: boolean }) {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1280px]">
-        <header>
+      <div className="collab-page collab-history-page mx-auto max-w-[1280px]">
+        <header className="collab-page-heading-legacy">
           <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">Mi historial</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             Trazabilidad completa de todas tus solicitudes, desde el registro hasta su resultado.
@@ -43,7 +43,7 @@ export function HistoryPage({ preview = false }: { preview?: boolean }) {
         </header>
 
         <section
-          className="mt-6 grid grid-cols-2 gap-4 xl:grid-cols-4"
+          className="collab-summary-strip mt-6 grid grid-cols-2 gap-4 xl:grid-cols-4"
           aria-label="Resumen histórico"
         >
           <HistoryMetric

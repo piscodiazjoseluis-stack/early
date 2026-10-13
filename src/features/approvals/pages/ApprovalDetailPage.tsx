@@ -1,3 +1,5 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
+import { portfolioPreviewRequests } from '@/features/portfolio/data/portfolio-preview-data'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft,
@@ -11,7 +13,7 @@ import {
   X,
 } from 'lucide-react'
 import { useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
@@ -19,6 +21,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useTeamLeaderExperience } from '@/features/approvals/hooks/useTeamLeaderExperience'
 import { confirmRequestUsage, getEligibility } from '@/features/requests/services/request-service'
 import { requestStatusPresentation } from '@/features/requests/utils/request-status'
 import { getTeams } from '@/features/teams/services/team-service'
@@ -39,11 +42,14 @@ type TimelineState = 'completed' | 'active' | 'pending' | 'failed' | 'skipped'
 export function ApprovalDetailPage() {
   const { requestId = '' } = useParams()
   const location = useLocation()
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const queryClient = useQueryClient()
   const { access } = useAuth()
+  const leaderExperience = useTeamLeaderExperience()
   const preview = location.pathname.startsWith('/sistema-visual')
-  const isPortfolio = Boolean(access?.roles.includes('PORTFOLIO_MANAGER'))
+  const isPortfolio =
+    location.pathname.startsWith('/sistema-visual/portfolio') ||
+    Boolean(access?.roles.includes('PORTFOLIO_MANAGER'))
   const [decision, setDecision] = useState<DecisionMode>(null)
   const [reason, setReason] = useState('')
   const [comment, setComment] = useState('')
@@ -57,7 +63,9 @@ export function ApprovalDetailPage() {
     enabled: !preview && Boolean(requestId),
   })
   const request = preview
-    ? (approvalPreviewRequests.find((item) => item.id === requestId) ?? approvalPreviewRequests[0])
+    ? ((isPortfolio ? portfolioPreviewRequests : approvalPreviewRequests).find(
+        (item) => item.id === requestId,
+      ) ?? approvalPreviewRequests[0])
     : requestQuery.data
   const teamRequestsQuery = useQuery({
     queryKey: ['team-leader-requests'],
@@ -154,7 +162,11 @@ export function ApprovalDetailPage() {
   const isPending = isPortfolio
     ? request.status === 'PENDING_PORTFOLIO' && request.requesterId !== access?.profile.id
     : request.status === 'PENDING_TEAM_LEADER' && request.requesterId !== access?.profile.id
-  const teamRequests = preview ? approvalPreviewRequests : (teamRequestsQuery.data ?? [])
+  const teamRequests = preview
+    ? isPortfolio
+      ? portfolioPreviewRequests
+      : approvalPreviewRequests
+    : (teamRequestsQuery.data ?? [])
   const sameDateRequests = teamRequests.filter(
     (item) =>
       item.id !== request.id &&
@@ -192,7 +204,7 @@ export function ApprovalDetailPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-5 pb-24">
+      <div className="leader-page leader-review-page space-y-5 pb-24">
         <button
           type="button"
           onClick={() => void navigate(back)}
@@ -200,7 +212,7 @@ export function ApprovalDetailPage() {
         >
           <ArrowLeft className="size-4" /> Volver a aprobaciones
         </button>
-        <Card className="p-5 sm:p-6">
+        <Card className="leader-object-header p-5 sm:p-6">
           <div className="lg:divide-border grid gap-5 lg:grid-cols-[1.25fr_repeat(4,minmax(0,1fr))] lg:divide-x">
             <div className="flex items-center gap-4">
               <span className="grid size-16 shrink-0 place-items-center rounded-full bg-[#f1ded9] text-xl font-extrabold text-[#8a4c40]">
@@ -224,7 +236,7 @@ export function ApprovalDetailPage() {
             />
             <div className="flex flex-col justify-center lg:px-5">
               <p className="text-muted-foreground text-xs font-bold">Estado actual</p>
-              <Badge tone={status.tone} className="mt-2">
+              <Badge tone={status.tone} className="mt-2 w-fit max-w-full self-start text-center">
                 {status.label}
               </Badge>
               <p className="text-muted-foreground mt-2 text-xs">
@@ -264,8 +276,8 @@ export function ApprovalDetailPage() {
           </Card>
         ) : null}
 
-        <div className="grid gap-5 xl:grid-cols-[1fr_0.95fr_0.95fr]">
-          <div className="space-y-5">
+        <div className="leader-review-grid grid gap-5 xl:grid-cols-[1fr_0.95fr_0.95fr]">
+          <div className="leader-review-evidence space-y-5">
             <Card className="border-electric-blue/20 bg-gradient-to-br from-white to-[#f5f8ff] p-5">
               <div className="flex items-center gap-3">
                 <Sparkles className="text-electric-blue size-5" />
@@ -318,7 +330,7 @@ export function ApprovalDetailPage() {
               </dl>
             </Card>
           </div>
-          <div className="space-y-5">
+          <div className="leader-review-validation space-y-5">
             <Card className="p-5">
               <h2 className="text-primary font-extrabold">Validaciones de negocio</h2>
               <div className="mt-4 space-y-2">
@@ -347,7 +359,7 @@ export function ApprovalDetailPage() {
               </div>
             </Card>
           </div>
-          <Card className="p-5">
+          <Card className="leader-timeline-panel p-5">
             <h2 className="text-primary font-extrabold">Línea de tiempo de la solicitud</h2>
             <div className="mt-5 space-y-5">
               <Timeline
@@ -464,7 +476,7 @@ export function ApprovalDetailPage() {
       </div>
 
       {isPending ? (
-        <div className="border-border fixed right-0 bottom-0 left-0 z-20 border-t bg-white/95 p-4 shadow-[0_-10px_30px_rgb(6_27_69/8%)] backdrop-blur lg:left-[274px]">
+        <div className="leader-decision-bar border-border fixed right-0 bottom-0 left-0 z-20 border-t bg-white/95 p-4 shadow-[0_-10px_30px_rgb(6_27_69/8%)] backdrop-blur lg:left-[274px]">
           <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:justify-end">
             <Button
               variant="secondary"
@@ -488,6 +500,7 @@ export function ApprovalDetailPage() {
       ) : null}
 
       <Modal
+        className="leader-decision-modal"
         open={decision !== null}
         title={
           decision === 'approve'
@@ -499,6 +512,18 @@ export function ApprovalDetailPage() {
         onClose={() => setDecision(null)}
         showFooter={false}
       >
+        {leaderExperience || isPortfolio ? (
+          <div className="leader-modal-context">
+            <strong>{request.requesterName}</strong>
+            <span>
+              {formatDate(request.requestedDate)} · {request.startTime.slice(0, 5)}–
+              {request.endTime.slice(0, 5)}
+            </span>
+            <span>
+              {request.teamName} · {status.label}
+            </span>
+          </div>
+        ) : null}
         <p className="text-muted-foreground text-sm leading-6">
           {decision === 'approve'
             ? isPortfolio
@@ -558,6 +583,7 @@ export function ApprovalDetailPage() {
       </Modal>
       <Modal
         open={usageModalOpen}
+        className="leader-usage-modal"
         title="Registrar resultado del Early Friday"
         onClose={() => setUsageModalOpen(false)}
         showFooter={false}
@@ -664,7 +690,7 @@ function Timeline({
   const failed = state === 'failed'
   const skipped = state === 'skipped'
   return (
-    <div className="flex gap-3">
+    <div className="leader-timeline-step flex gap-3">
       <span
         className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border-2 ${complete ? 'border-electric-blue bg-electric-blue text-white' : active ? 'border-electric-blue bg-white' : failed ? 'border-danger bg-danger-soft text-danger' : skipped ? 'border-slate-300 bg-slate-100 text-slate-500' : 'border-border bg-white'}`}
       >

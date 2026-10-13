@@ -1,30 +1,36 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import { Bell, Check, ChevronDown, LogOut, Menu, UserRound } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useUnreadNotifications } from '@/features/collaborator/hooks/useUnreadNotifications'
 
 export function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
   const location = useLocation()
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const { access, logout } = useAuth()
   const preview = location.pathname.startsWith('/sistema-visual')
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const unread = useUnreadNotifications()
   const leaderPreview = location.pathname.startsWith('/sistema-visual/jefe')
+  const portfolioPreview = location.pathname.startsWith('/sistema-visual/portfolio')
   const fullName = preview
-    ? leaderPreview
-      ? 'Hugo Ramirez'
-      : 'Jose Pisco'
+    ? portfolioPreview
+      ? 'María Luisa Temoche'
+      : leaderPreview
+        ? 'Hugo Ramirez'
+        : 'Jose Pisco'
     : (access?.profile.full_name ?? 'Usuario')
   const jobTitle = preview
-    ? leaderPreview
-      ? 'Jefe directo / PMO'
-      : 'Practicante / PMO'
+    ? portfolioPreview
+      ? 'Portfolio Manager'
+      : leaderPreview
+        ? 'Jefe directo / PMO'
+        : 'Practicante / PMO'
     : (access?.profile.job_title ?? 'Colaborador')
-  const isPortfolio = Boolean(access?.roles.includes('PORTFOLIO_MANAGER'))
+  const isPortfolio = portfolioPreview || Boolean(access?.roles.includes('PORTFOLIO_MANAGER'))
   const isLeader = leaderPreview || Boolean(access?.roles.includes('TEAM_LEADER'))
   const roleLabel = isPortfolio ? 'Portfolio Manager' : isLeader ? 'Jefe directo' : 'Colaborador'
   const subtitle = jobTitle.toLocaleLowerCase('es').includes(roleLabel.toLocaleLowerCase('es'))
@@ -86,7 +92,7 @@ export function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
           <button
             type="button"
             onClick={() => setMenuOpen((current) => !current)}
-            className="border border-transparent hover:border-border hover:bg-white hover:shadow-soft flex items-center gap-3 rounded-xl p-1.5 transition"
+            className="hover:border-border hover:shadow-soft flex items-center gap-3 rounded-xl border border-transparent p-1.5 transition hover:bg-white"
             aria-expanded={menuOpen}
             aria-haspopup="menu"
           >
@@ -160,7 +166,7 @@ function getInitials(name: string) {
 }
 
 function getPageLabel(pathname: string) {
-  const normalized = pathname.replace(/^\/sistema-visual(?:\/jefe)?/, '') || '/panel'
+  const normalized = pathname.replace(/^\/sistema-visual(?:\/jefe|\/portfolio)?/, '') || '/panel'
   const entries: Array<[string, string]> = [
     ['/solicitudes/nueva', 'Nueva solicitud'],
     ['/solicitudes/', 'Detalle de solicitud'],

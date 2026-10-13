@@ -36,8 +36,8 @@ export function PortfolioAuditPage() {
   )
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1400px] space-y-5">
-        <header>
+      <div className="portfolio-page portfolio-audit mx-auto max-w-[1400px] space-y-5">
+        <header className="portfolio-page-heading">
           <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
             Excepciones y auditoría
           </h1>

@@ -1,12 +1,16 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
+import { portfolioPreviewRequests } from '@/features/portfolio/data/portfolio-preview-data'
 import { useQuery } from '@tanstack/react-query'
 import { Check, Eye, Filter, Search, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useTeamLeaderExperience } from '@/features/approvals/hooks/useTeamLeaderExperience'
+import { usePortfolioExperience } from '@/features/portfolio/hooks/usePortfolioExperience'
 import { requestStatusPresentation } from '@/features/requests/utils/request-status'
 
 import { approvalPreviewRequests } from '../data/approval-preview-data'
@@ -18,10 +22,12 @@ type PriorityFilter = 'ALL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'UNSCORED'
 
 export function ApprovalsPage() {
   const location = useLocation()
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const { access } = useAuth()
   const preview = location.pathname.startsWith('/sistema-visual')
-  const isPortfolio = Boolean(access?.roles.includes('PORTFOLIO_MANAGER'))
+  const isPortfolio =
+    location.pathname.startsWith('/sistema-visual/portfolio') ||
+    Boolean(access?.roles.includes('PORTFOLIO_MANAGER'))
   const initialStatus: StatusFilter = isPortfolio ? 'PENDING_PORTFOLIO' : 'PENDING_TEAM_LEADER'
   const [draftSearch, setDraftSearch] = useState('')
   const [draftStatus, setDraftStatus] = useState<StatusFilter>(initialStatus)
@@ -37,8 +43,13 @@ export function ApprovalsPage() {
     enabled: !preview && Boolean(access),
   })
   const requests = useMemo(
-    () => (preview ? approvalPreviewRequests : (query.data ?? [])),
-    [preview, query.data],
+    () =>
+      preview
+        ? isPortfolio
+          ? portfolioPreviewRequests
+          : approvalPreviewRequests
+        : (query.data ?? []),
+    [preview, isPortfolio, query.data],
   )
   const filtered = useMemo(
     () =>
@@ -61,9 +72,9 @@ export function ApprovalsPage() {
 
   return (
     <AppLayout>
-      <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="leader-page leader-approvals-grid grid gap-6 2xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-5">
-          <div className="flex items-center gap-4">
+          <div className="leader-approval-heading flex items-center gap-4">
             <span className="grid size-16 place-items-center rounded-full bg-[#efdce8] text-xl font-extrabold text-[#77355f]">
               {isPortfolio ? 'ML' : 'HR'}
             </span>
@@ -79,7 +90,7 @@ export function ApprovalsPage() {
             </div>
           </div>
 
-          <Card className="p-5">
+          <Card className="leader-filter-panel p-5">
             <form
               className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_auto]"
               onSubmit={(event) => {
@@ -148,7 +159,7 @@ export function ApprovalsPage() {
             </form>
           </Card>
 
-          <Card className="overflow-hidden">
+          <Card className="leader-records-panel overflow-hidden">
             <div className="border-border flex flex-wrap items-center justify-between gap-2 border-b px-5 py-3">
               <p className="text-primary text-sm font-extrabold">Solicitudes de colaboradores</p>
               <p className="text-muted-foreground text-xs" aria-live="polite">
@@ -202,7 +213,7 @@ export function ApprovalsPage() {
           </Card>
         </div>
 
-        <aside className="space-y-5">
+        <aside className="leader-approval-summary space-y-5">
           <Card className="p-5">
             <h2 className="text-primary font-extrabold">Resumen de aprobaciones</h2>
             <p className="text-muted-foreground mt-1 text-xs">Datos actualizados en tiempo real</p>
@@ -241,7 +252,9 @@ export function ApprovalsPage() {
           <Card className="border-electric-blue/20 bg-gradient-to-br from-white to-[#f5f8ff] p-5">
             <div className="flex items-center gap-2">
               <h2 className="text-primary font-extrabold">Sugerencia de IA</h2>
-              <Badge tone="info">Próxima etapa</Badge>
+              <Badge tone="info" className="justify-center text-center">
+                Próxima etapa
+              </Badge>
             </div>
             <p className="text-muted-foreground mt-3 text-sm leading-6">
               La recomendación mostrará evidencia y nunca tomará la decisión por ti.
@@ -303,6 +316,8 @@ function RequestRow({
 }
 function RequestCard({ request, onOpen }: { request: TeamApprovalRequest; onOpen: () => void }) {
   const status = requestStatusPresentation[request.status]
+  const leaderExperience = useTeamLeaderExperience()
+  const portfolioExperience = usePortfolioExperience()
   return (
     <article className="border-border rounded-2xl border p-4">
       <div className="flex items-center gap-3">
@@ -321,6 +336,32 @@ function RequestCard({ request, onOpen }: { request: TeamApprovalRequest; onOpen
         <Badge tone={priorityTone(request.priority)}>{priorityLabel(request.priority)}</Badge>
         <Badge>{formatDate(request.requestedDate)}</Badge>
       </div>
+      {leaderExperience || portfolioExperience ? (
+        <>
+          <dl className="leader-mobile-request-facts">
+            <div>
+              <dt>Equipo</dt>
+              <dd>{request.teamName}</dd>
+            </div>
+            <div>
+              <dt>Hora propuesta</dt>
+              <dd>
+                {request.startTime.slice(0, 5)}–{request.endTime.slice(0, 5)}
+              </dd>
+            </div>
+          </dl>
+          {(
+            portfolioExperience
+              ? request.status === 'PENDING_PORTFOLIO'
+              : request.status === 'PENDING_TEAM_LEADER'
+          ) ? (
+            <div className="mt-4 flex gap-3">
+              <Action icon={<Check />} label="Revisar aprobación" tone="success" onClick={onOpen} />
+              <Action icon={<X />} label="Revisar rechazo" tone="danger" onClick={onOpen} />
+            </div>
+          ) : null}
+        </>
+      ) : null}
     </article>
   )
 }

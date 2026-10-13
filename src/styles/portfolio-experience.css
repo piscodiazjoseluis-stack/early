@@ -1,0 +1,542 @@
+/* Role-scoped executive composition. Other approved experiences remain untouched. */
+.app-shell[data-experience='portfolio'] {
+  --portfolio-line: #dce6f2;
+  background: #f3f7fc;
+  color: #152540;
+  font-variant-numeric: tabular-nums;
+}
+.app-shell[data-experience='portfolio'] .app-main {
+  padding-top: 28px;
+  padding-bottom: 36px;
+}
+/* A transformed page becomes a containing block for nested fixed dialogs. */
+.app-shell[data-experience='portfolio'] .app-main > * {
+  animation-name: portfolio-page-enter;
+}
+@keyframes portfolio-page-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.app-shell[data-experience='portfolio'] .app-header {
+  min-height: 76px;
+  background: #fff;
+}
+.app-shell[data-experience='portfolio'] .sidebar-brand-row {
+  border: 0;
+  box-shadow: none;
+  background: none;
+}
+.app-shell[data-experience='portfolio'] .portfolio-page {
+  max-width: 1540px;
+}
+.app-shell[data-experience='portfolio']
+  :is(.portfolio-page-heading, .portfolio-report-heading, .collab-page-heading-legacy) {
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--portfolio-line);
+}
+.app-shell[data-experience='portfolio'] h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.app-shell[data-experience='portfolio'] h2 {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+.app-shell[data-experience='portfolio'] p {
+  text-wrap: pretty;
+}
+.app-shell[data-experience='portfolio'] .enterprise-surface {
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgb(7 29 73 / 4%);
+}
+.app-shell[data-experience='portfolio']
+  :is(button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid #176bff;
+  outline-offset: 3px;
+}
+.app-shell[data-experience='portfolio'] :is(input, select, textarea) {
+  caret-color: #176bff;
+}
+.app-shell[data-experience='portfolio'] ::selection {
+  background: #d9e9ff;
+  color: #071d49;
+}
+.app-shell[data-experience='portfolio'] :is(button, input, select) {
+  min-height: 44px;
+}
+.app-shell[data-experience='portfolio'] button {
+  cursor: pointer;
+}
+.app-shell[data-experience='portfolio'] button:disabled {
+  cursor: not-allowed;
+}
+.app-shell[data-experience='portfolio'] .portfolio-executive-metrics {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0;
+  background: #fff;
+  border: 1px solid var(--portfolio-line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.app-shell[data-experience='portfolio'] .portfolio-executive-metrics .portfolio-kpi {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 18px 14px;
+  border-right: 1px solid var(--portfolio-line);
+  transform: none;
+}
+.app-shell[data-experience='portfolio'] .portfolio-executive-metrics .portfolio-kpi:last-child {
+  border-right: 0;
+}
+.app-shell[data-experience='portfolio'] .portfolio-executive-metrics .portfolio-kpi:nth-child(2),
+.app-shell[data-experience='portfolio'] .portfolio-executive-metrics .portfolio-kpi:nth-child(8) {
+  background: #edf4ff;
+}
+.app-shell[data-experience='portfolio'] .portfolio-kpi > span {
+  background: transparent;
+  border-radius: 0;
+  width: 22px;
+  height: 22px;
+}
+.app-shell[data-experience='portfolio'] .portfolio-kpi > p:nth-of-type(1) {
+  font-size: 0.75rem;
+  min-height: 32px;
+}
+.app-shell[data-experience='portfolio'] .portfolio-kpi > p:nth-of-type(2) {
+  font-size: 1.75rem;
+  line-height: 1.2;
+  margin-top: 4px;
+}
+.app-shell[data-experience='portfolio'] .portfolio-kpi > p:last-child {
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+.app-shell[data-experience='portfolio'] .portfolio-supervision-grid {
+  grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.65fr);
+  align-items: start;
+}
+.app-shell[data-experience='portfolio'] .portfolio-attention-column {
+  display: grid;
+  gap: 20px;
+}
+.app-shell[data-experience='portfolio'] .leader-mobile-request-facts {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  font-size: 0.8rem;
+}
+.app-shell[data-experience='portfolio'] .leader-mobile-request-facts dt {
+  color: #64728a;
+  font-size: 0.72rem;
+}
+.app-shell[data-experience='portfolio'] .leader-mobile-request-facts dd {
+  margin-top: 4px;
+  font-weight: 700;
+}
+.app-shell[data-experience='portfolio'] .portfolio-report-heading button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.app-shell[data-experience='portfolio'] .portfolio-attention-panel {
+  background: #edf4ff;
+  border-color: #b7d0f5;
+}
+.app-shell[data-experience='portfolio'] .portfolio-attention-panel > div:nth-of-type(2) {
+  max-height: 320px;
+}
+.app-shell[data-experience='portfolio'] .portfolio-team-ledger {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.app-shell[data-experience='portfolio'] .portfolio-team-ledger > article {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(240px, 1.1fr);
+  column-gap: 20px;
+  padding: 18px 0;
+  border: 0;
+  border-top: 1px solid var(--portfolio-line);
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+}
+.app-shell[data-experience='portfolio'] .portfolio-team-ledger > article > div:nth-child(2) {
+  margin: 0;
+  border-top: 0;
+  padding-top: 0;
+}
+.app-shell[data-experience='portfolio'] .portfolio-team-ledger > article > div:nth-child(3) {
+  border-bottom: 0;
+}
+.app-shell[data-experience='portfolio'] .portfolio-team-ledger > article > div:last-child {
+  margin-top: 12px;
+}
+.app-shell[data-experience='portfolio'] .portfolio-context-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.app-shell[data-experience='portfolio'] .portfolio-context-grid > * {
+  min-width: 0;
+}
+.app-shell[data-experience='portfolio'] .portfolio-context-grid > :nth-child(3) {
+  grid-column: 1;
+  grid-row: 1;
+}
+.app-shell[data-experience='portfolio'] .portfolio-context-grid > :nth-child(2) {
+  grid-column: 2;
+  grid-row: 1;
+}
+.app-shell[data-experience='portfolio'] .portfolio-context-grid > :first-child {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.app-shell[data-experience='portfolio'] .portfolio-evolution {
+  min-width: 0;
+}
+.app-shell[data-experience='portfolio'] .portfolio-report-heading {
+  display: block;
+}
+.app-shell[data-experience='portfolio']
+  .portfolio-report-heading
+  > div:last-child:not(:first-child) {
+  margin-top: 20px;
+}
+.app-shell[data-experience='portfolio'] .portfolio-report-heading fieldset {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 12px;
+}
+.app-shell[data-experience='portfolio'] .portfolio-report-heading fieldset > span {
+  display: none;
+}
+.app-shell[data-experience='portfolio'] .portfolio-report-heading fieldset label {
+  min-width: 0;
+  font-size: 0.75rem;
+}
+.app-shell[data-experience='portfolio'] .portfolio-report-heading fieldset :is(input, select) {
+  min-width: 0;
+  width: 100%;
+  background: #f3f7fc;
+  padding: 8px;
+  font-size: 0.8rem;
+}
+.app-shell[data-experience='portfolio'] .portfolio-report-metrics {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+.app-shell[data-experience='portfolio'] .portfolio-report-metrics .portfolio-kpi {
+  transform: none;
+  box-shadow: none;
+}
+.app-shell[data-experience='portfolio'] .portfolio-chart-overview {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.app-shell[data-experience='portfolio'] .portfolio-chart-overview > :last-child {
+  grid-column: 1 / -1;
+}
+.app-shell[data-experience='portfolio'] .portfolio-chart-evidence {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.app-shell[data-experience='portfolio'] .portfolio-chart-evidence > :last-child {
+  grid-column: 1 / -1;
+  min-height: 0;
+}
+.app-shell[data-experience='portfolio'] .portfolio-chart-evidence > :last-child > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.app-shell[data-experience='portfolio'] .portfolio-chart-evidence > :last-child > div > * {
+  margin: 0;
+}
+.app-shell[data-experience='portfolio'] .portfolio-insight-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.app-shell[data-experience='portfolio'] .portfolio-insight-grid > * {
+  box-shadow: none;
+}
+.app-shell[data-experience='portfolio'] .leader-approvals-grid {
+  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 24px;
+}
+.app-shell[data-experience='portfolio'] .leader-approval-heading > span {
+  width: 48px;
+  height: 48px;
+  font-size: 1rem;
+}
+.app-shell[data-experience='portfolio'] .leader-filter-panel {
+  background: #edf4ff;
+  box-shadow: none;
+}
+.app-shell[data-experience='portfolio'] .leader-filter-panel form {
+  grid-template-columns: 1fr 1fr minmax(170px, 1.3fr) auto;
+  align-items: end;
+}
+.app-shell[data-experience='portfolio'] .leader-approvals-grid table {
+  font-variant-numeric: tabular-nums;
+}
+.app-shell[data-experience='portfolio'] th {
+  font-size: 0.72rem;
+  padding: 14px 16px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.app-shell[data-experience='portfolio'] td {
+  padding: 16px;
+}
+.app-shell[data-experience='portfolio'] thead {
+  background: #edf4ff;
+}
+.app-shell[data-experience='portfolio'] .leader-review-grid {
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.8fr);
+  align-items: start;
+}
+.app-shell[data-experience='portfolio'] .leader-review-evidence {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.app-shell[data-experience='portfolio'] .leader-review-evidence > * {
+  margin-block: 0;
+  min-width: 0;
+}
+.app-shell[data-experience='portfolio'] .leader-review-validation {
+  grid-column: 1;
+}
+.app-shell[data-experience='portfolio'] .leader-timeline-panel {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  position: static;
+  background: #edf4ff;
+}
+.app-shell[data-experience='portfolio'] .leader-object-header {
+  background: #fff;
+}
+.app-shell[data-experience='portfolio'] .leader-object-header > div {
+  grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
+}
+.app-shell[data-experience='portfolio'] .leader-decision-bar {
+  left: 276px;
+  background: #fff;
+  backdrop-filter: none;
+}
+.app-shell[data-experience='portfolio'] .leader-decision-bar > div {
+  max-width: 1540px;
+}
+.app-shell[data-experience='portfolio'] .leader-modal-context {
+  display: grid;
+  gap: 6px;
+  background: #edf4ff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  font-size: 0.8rem;
+}
+.app-shell[data-experience='portfolio'] [role='dialog'] {
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  border-radius: 16px;
+}
+.app-shell[data-experience='portfolio'] [role='dialog'] input,
+.app-shell[data-experience='portfolio'] [role='dialog'] select {
+  min-height: 44px;
+}
+.app-shell[data-experience='portfolio'] .leader-calendar-grid {
+  grid-template-columns: minmax(0, 1fr) 320px;
+  align-items: start;
+}
+.app-shell[data-experience='portfolio'] .portfolio-team-actions {
+  padding: 16px;
+  border: 1px solid var(--portfolio-line);
+  border-radius: 16px;
+  background: #fff;
+}
+.app-shell[data-experience='portfolio'] .portfolio-team-directory {
+  grid-template-columns: minmax(0, 1fr) 290px;
+  align-items: start;
+}
+.app-shell[data-experience='portfolio'] .portfolio-team-directory section > .enterprise-surface {
+  grid-template-columns: 220px minmax(0, 1fr);
+}
+.app-shell[data-experience='portfolio'] .portfolio-audit table th:first-child {
+  width: 170px;
+}
+.app-shell[data-experience='portfolio'] .portfolio-audit table td {
+  vertical-align: top;
+  line-height: 1.6;
+}
+.app-shell[data-experience='portfolio'] .bounded-records {
+  scrollbar-width: thin;
+  scrollbar-color: #a7bdd8 #edf4ff;
+}
+.app-shell[data-experience='portfolio'] .collab-profile-page {
+  max-width: 1180px;
+}
+.app-shell[data-experience='portfolio'] .collab-help-page {
+  max-width: 1180px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .app-shell[data-experience='portfolio'] button:not(:disabled):hover {
+    filter: brightness(0.98);
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-team-ledger > article:hover {
+    background: #f3f7fc;
+  }
+}
+@media (max-width: 1450px) {
+  .app-shell[data-experience='portfolio'] .portfolio-executive-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .app-shell[data-experience='portfolio']
+    .portfolio-executive-metrics
+    .portfolio-kpi:nth-child(-n + 4) {
+    border-bottom: 1px solid var(--portfolio-line);
+  }
+  .app-shell[data-experience='portfolio']
+    .portfolio-executive-metrics
+    .portfolio-kpi:nth-child(4n) {
+    border-right: 0;
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-supervision-grid {
+    grid-template-columns: 1fr;
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-attention-panel > div:nth-of-type(2) {
+    max-height: 240px;
+  }
+  .app-shell[data-experience='portfolio'] .leader-approvals-grid {
+    grid-template-columns: 1fr;
+  }
+  .app-shell[data-experience='portfolio'] .leader-approval-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .app-shell[data-experience='portfolio'] .leader-approval-summary > * {
+    margin-block: 0;
+  }
+  .app-shell[data-experience='portfolio'] .leader-review-evidence {
+    grid-template-columns: 1fr;
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-team-directory {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 1100px) {
+  .app-shell[data-experience='portfolio'] .leader-review-grid,
+  .app-shell[data-experience='portfolio'] .leader-calendar-grid {
+    grid-template-columns: 1fr;
+  }
+  .app-shell[data-experience='portfolio'] .leader-timeline-panel,
+  .app-shell[data-experience='portfolio'] .leader-review-validation {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .app-shell[data-experience='portfolio'] .leader-decision-bar {
+    left: 0;
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-report-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-report-heading > div:last-child {
+    display: block;
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-report-heading fieldset {
+    margin-bottom: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .app-shell[data-experience='portfolio'] .leader-filter-panel form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .app-shell[data-experience='portfolio'] .leader-object-header > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .app-shell[data-experience='portfolio'] .leader-object-header > div > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 767px) {
+  .app-shell[data-experience='portfolio'] .leader-filter-panel form {
+    grid-template-columns: 1fr;
+  }
+  .app-shell[data-experience='portfolio'] .app-main {
+    padding: 24px 16px 32px;
+  }
+  .app-shell[data-experience='portfolio'] h1 {
+    font-size: 1.65rem;
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-executive-metrics,
+  .app-shell[data-experience='portfolio'] .portfolio-report-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-executive-metrics .portfolio-kpi {
+    border-bottom: 1px solid var(--portfolio-line);
+  }
+  .app-shell[data-experience='portfolio']
+    .portfolio-executive-metrics
+    .portfolio-kpi:nth-child(even) {
+    border-right: 0;
+  }
+  .app-shell[data-experience='portfolio']
+    .portfolio-executive-metrics
+    .portfolio-kpi:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-team-ledger > article,
+  .app-shell[data-experience='portfolio'] .portfolio-context-grid,
+  .app-shell[data-experience='portfolio'] .portfolio-chart-overview,
+  .app-shell[data-experience='portfolio'] .portfolio-chart-evidence,
+  .app-shell[data-experience='portfolio'] .portfolio-insight-grid,
+  .app-shell[data-experience='portfolio'] .leader-approval-summary,
+  .app-shell[data-experience='portfolio'] .portfolio-chart-evidence > :last-child > div {
+    grid-template-columns: 1fr;
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-team-ledger > article > div:nth-child(2) {
+    padding-top: 16px;
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-context-grid > *,
+  .app-shell[data-experience='portfolio'] .portfolio-context-grid > :first-child,
+  .app-shell[data-experience='portfolio'] .portfolio-context-grid > :nth-child(2),
+  .app-shell[data-experience='portfolio'] .portfolio-context-grid > :nth-child(3),
+  .app-shell[data-experience='portfolio'] .portfolio-chart-overview > *,
+  .app-shell[data-experience='portfolio'] .portfolio-chart-evidence > * {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-team-directory section > .enterprise-surface {
+    grid-template-columns: 1fr;
+  }
+  .app-shell[data-experience='portfolio'] .leader-decision-bar > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .app-shell[data-experience='portfolio'] .leader-decision-bar > div > :first-child {
+    grid-column: 1 / -1;
+    margin-right: 0;
+  }
+  .app-shell[data-experience='portfolio'] .leader-decision-bar button {
+    width: 100%;
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-report-heading fieldset {
+    grid-template-columns: 1fr;
+  }
+  .app-shell[data-experience='portfolio'] .portfolio-team-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell[data-experience='portfolio'] *,
+  .app-shell[data-experience='portfolio'] *::before,
+  .app-shell[data-experience='portfolio'] *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

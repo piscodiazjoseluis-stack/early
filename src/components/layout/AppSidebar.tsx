@@ -1,3 +1,4 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import {
   Bell,
   CalendarDays,
@@ -13,7 +14,7 @@ import {
   UsersRound,
   X,
 } from 'lucide-react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useUnreadNotifications } from '@/features/collaborator/hooks/useUnreadNotifications'
@@ -79,7 +80,7 @@ const teamLeaderNavigation = [
     label: 'Mi equipo',
     icon: UsersRound,
     path: '/mi-equipo',
-    previewPath: '/sistema-visual/mi-equipo',
+    previewPath: '/sistema-visual/jefe/mi-equipo',
   },
   {
     label: 'Rotación',
@@ -97,7 +98,7 @@ const teamLeaderNavigation = [
     label: 'Mis solicitudes',
     icon: ClipboardCheck,
     path: '/solicitudes',
-    previewPath: '/sistema-visual/solicitudes',
+    previewPath: '/sistema-visual/jefe/solicitudes',
   },
   {
     label: 'BI del equipo',
@@ -115,7 +116,7 @@ const teamLeaderNavigation = [
     label: 'Notificaciones',
     icon: Bell,
     path: '/notificaciones',
-    previewPath: '/sistema-visual/notificaciones',
+    previewPath: '/sistema-visual/jefe/notificaciones',
   },
 ]
 
@@ -155,21 +156,37 @@ const portfolioNavigation = [
   { label: 'Notificaciones', icon: Bell, path: '/notificaciones', previewPath: '/notificaciones' },
 ]
 
+const adminNavigation = [
+  {
+    label: 'Administración',
+    icon: ShieldCheck,
+    path: '/administracion',
+    previewPath: '/administracion',
+  },
+  { label: 'Equipos', icon: UsersRound, path: '/equipos', previewPath: '/equipos' },
+]
+
 export function AppSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const location = useLocation()
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const { access } = useAuth()
   const unreadNotifications = useUnreadNotifications()
   const isPreview = location.pathname.startsWith('/sistema-visual')
   const isLeader =
     location.pathname.startsWith('/sistema-visual/jefe') ||
     Boolean(access?.roles.includes('TEAM_LEADER'))
-  const isPortfolio = Boolean(access?.roles.includes('PORTFOLIO_MANAGER'))
-  const navigation = isPortfolio
+  const portfolioPreview = location.pathname.startsWith('/sistema-visual/portfolio')
+  const isPortfolio = portfolioPreview || Boolean(access?.roles.includes('PORTFOLIO_MANAGER'))
+  const isAdmin = Boolean(access?.roles.includes('ADMIN'))
+  const navigation = portfolioPreview
     ? portfolioNavigation
-    : isLeader
-      ? teamLeaderNavigation
-      : collaboratorNavigation
+    : isAdmin
+      ? adminNavigation
+      : isPortfolio
+        ? portfolioNavigation
+        : isLeader
+          ? teamLeaderNavigation
+          : collaboratorNavigation
 
   return (
     <>
@@ -204,7 +221,11 @@ export function AppSidebar({ open, onClose }: { open: boolean; onClose: () => vo
         </p>
         <nav aria-label="Navegación principal" className="sidebar-nav-scroll mt-2 space-y-1.5">
           {navigation.map(({ label, icon: Icon, path, previewPath }) => {
-            const target = isPreview ? previewPath : path
+            const target = portfolioPreview
+              ? `/sistema-visual/portfolio${path === '/panel' ? '' : path}`
+              : isPreview
+                ? previewPath
+                : path
             const active = target ? isNavigationActive(location.pathname, target) : false
             return (
               <button
@@ -217,9 +238,7 @@ export function AppSidebar({ open, onClose }: { open: boolean; onClose: () => vo
                 }}
                 className={cn(
                   'sidebar-nav-item flex min-h-11 w-full items-center gap-3 rounded-xl px-3.5 text-left text-[13px] font-bold',
-                  active
-                    ? 'sidebar-nav-item-active bg-primary'
-                    : 'sidebar-nav-item-idle',
+                  active ? 'sidebar-nav-item-active bg-primary' : 'sidebar-nav-item-idle',
                 )}
               >
                 <Icon className="size-5 shrink-0" aria-hidden="true" />
@@ -245,7 +264,11 @@ export function AppSidebar({ open, onClose }: { open: boolean; onClose: () => vo
 
 function isNavigationActive(pathname: string, target: string) {
   if (pathname === target) return true
-  const requestListRoutes = ['/solicitudes', '/sistema-visual/solicitudes']
+  const requestListRoutes = [
+    '/solicitudes',
+    '/sistema-visual/solicitudes',
+    '/sistema-visual/jefe/solicitudes',
+  ]
   return (
     requestListRoutes.includes(target) &&
     pathname.startsWith(`${target}/`) &&

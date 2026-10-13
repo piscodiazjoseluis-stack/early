@@ -19,6 +19,7 @@ export type RequestView = {
   teamLeaderName?: string
   portfolioManagerName?: string
   approvalHistory?: RequestApprovalView[]
+  auditTrail?: RequestAuditEvent[]
 }
 
 export type RequestApprovalView = {
@@ -27,6 +28,19 @@ export type RequestApprovalView = {
   comment: string | null
   decidedAt: string
   approverName: string
+}
+
+export type RequestAuditEvent = {
+  id: string
+  type: 'STATUS' | 'DECISION'
+  action: string
+  occurredAt: string
+  actorName: string
+  fromStatus: RequestStatus | null
+  toStatus: RequestStatus | null
+  approvalLevel: Database['public']['Enums']['approval_level'] | null
+  decision: Database['public']['Enums']['approval_decision'] | null
+  comment: string | null
 }
 
 export type EligibilityResult = {

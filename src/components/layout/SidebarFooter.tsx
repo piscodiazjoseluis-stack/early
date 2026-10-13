@@ -1,11 +1,12 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import { CircleHelp, LogOut } from 'lucide-react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
 export function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation()
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const { logout } = useAuth()
   const preview = location.pathname.startsWith('/sistema-visual')
 

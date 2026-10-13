@@ -1,7 +1,7 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bell, CheckCheck, ChevronRight, Inbox } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
@@ -18,7 +18,7 @@ import {
 import { notificationRequestPath } from '../utils/notification-routing'
 
 export function NotificationsPage({ preview = false }: { preview?: boolean }) {
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const { access } = useAuth()
   const queryClient = useQueryClient()
   const query = useQuery({
@@ -59,8 +59,8 @@ export function NotificationsPage({ preview = false }: { preview?: boolean }) {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1120px]">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="collab-page collab-notifications-page mx-auto max-w-[1120px]">
+        <header className="collab-page-heading-legacy flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
               Notificaciones

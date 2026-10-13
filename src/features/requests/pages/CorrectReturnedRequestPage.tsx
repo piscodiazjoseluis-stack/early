@@ -1,7 +1,8 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, ArrowLeft, CalendarDays, Clock3, FileText, Send } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Button } from '@/components/ui/Button'
@@ -38,7 +39,7 @@ export function CorrectReturnedRequestPage({ preview = false }: { preview?: bool
 }
 
 function CorrectionForm({ request, preview }: { request: RequestView; preview: boolean }) {
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const queryClient = useQueryClient()
   const [requestedDate, setRequestedDate] = useState(request.requestedDate)
   const [departureTime, setDepartureTime] = useState(request.startTime.slice(0, 5))
@@ -85,7 +86,7 @@ function CorrectionForm({ request, preview }: { request: RequestView; preview: b
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1080px]">
+      <div className="collab-page collab-correction-page mx-auto max-w-[1080px]">
         <Button
           variant="ghost"
           onClick={() =>
@@ -96,7 +97,7 @@ function CorrectionForm({ request, preview }: { request: RequestView; preview: b
         >
           <ArrowLeft className="size-4" /> Volver al detalle
         </Button>
-        <header className="mt-4">
+        <header className="collab-page-heading-legacy mt-4">
           <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
             Corregir solicitud
           </h1>

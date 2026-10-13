@@ -1,6 +1,8 @@
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, UsersRound } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
+import { portfolioPreviewRequests } from '@/features/portfolio/data/portfolio-preview-data'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
@@ -15,15 +17,50 @@ import { useTeamLeaderWorkspace } from '../hooks/useTeamLeaderWorkspace'
 import type { TeamApprovalRequest } from '../types'
 
 const weekDays = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM']
+const calendarStatuses: TeamApprovalRequest['status'][] = [
+  'PENDING_TEAM_LEADER',
+  'RETURNED_FOR_CORRECTION',
+  'PENDING_PORTFOLIO',
+  'REJECTED_BY_TEAM_LEADER',
+  'REJECTED_BY_PORTFOLIO',
+  'FINAL_APPROVED',
+  'CANCELLED',
+  'USED',
+  'NOT_USED',
+  'EXPIRED',
+]
 
 export function TeamCalendarPage({ global = false }: { global?: boolean }) {
   const location = useLocation()
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const preview = location.pathname.startsWith('/sistema-visual')
-  const { requests, team, isLoading } = useTeamLeaderWorkspace(preview)
+  const { requests: workspaceRequests, team, isLoading } = useTeamLeaderWorkspace(preview)
+  const requests = preview && global ? portfolioPreviewRequests : workspaceRequests
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [teamFilter, setTeamFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState<TeamApprovalRequest['status'] | ''>('')
   const today = useCurrentDate()
   const todayKey = toDateKey(today)
-  const requestGroups = useMemo(() => groupRequestsByPersonAndDate(requests), [requests])
+  const filteredRequests = useMemo(
+    () =>
+      requests.filter((request) => {
+        if (dateFrom && request.requestedDate < dateFrom) return false
+        if (dateTo && request.requestedDate > dateTo) return false
+        if (teamFilter && request.teamName !== teamFilter) return false
+        if (statusFilter && request.status !== statusFilter) return false
+        return true
+      }),
+    [dateFrom, dateTo, requests, statusFilter, teamFilter],
+  )
+  const teamOptions = useMemo(
+    () => [...new Set(requests.map((request) => request.teamName))].toSorted(),
+    [requests],
+  )
+  const requestGroups = useMemo(
+    () => groupRequestsByPersonAndDate(filteredRequests),
+    [filteredRequests],
+  )
   const currentRequests = useMemo(
     () => Array.from(requestGroups.values(), (group) => group.current),
     [requestGroups],
@@ -67,8 +104,8 @@ export function TeamCalendarPage({ global = false }: { global?: boolean }) {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1420px]">
-        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="leader-page leader-calendar-page mx-auto max-w-[1420px]">
+        <header className="leader-page-heading flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
               {global ? 'Calendario global' : 'Calendario del equipo'}
@@ -86,8 +123,59 @@ export function TeamCalendarPage({ global = false }: { global?: boolean }) {
           </div>
         </header>
 
-        <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <Card className="overflow-hidden p-4 sm:p-6">
+        <Card className="leader-filter-panel mt-5 p-4">
+          <fieldset className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <legend className="sr-only">Filtros del calendario operativo</legend>
+            <CalendarFilter label="Desde" type="date" value={dateFrom} onChange={setDateFrom} />
+            <CalendarFilter label="Hasta" type="date" value={dateTo} onChange={setDateTo} />
+            {global ? (
+              <label className="text-primary text-xs font-extrabold">
+                Equipo
+                <select
+                  className="input-control mt-2"
+                  value={teamFilter}
+                  onChange={(event) => setTeamFilter(event.target.value)}
+                >
+                  <option value="">Todos los equipos</option>
+                  {teamOptions.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              <label className="text-primary text-xs font-extrabold">
+                Equipo
+                <input className="input-control mt-2" value={team?.name ?? 'Tu equipo'} disabled />
+              </label>
+            )}
+            <label className="text-primary text-xs font-extrabold">
+              Estado
+              <select
+                className="input-control mt-2"
+                value={statusFilter}
+                onChange={(event) =>
+                  setStatusFilter(event.target.value as TeamApprovalRequest['status'] | '')
+                }
+              >
+                <option value="">Todos los estados</option>
+                {calendarStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {shortStatus(status)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </fieldset>
+          <p className="text-muted-foreground mt-3 text-xs">
+            {currentRequests.length} registro{currentRequests.length === 1 ? '' : 's'} coincide
+            {currentRequests.length === 1 ? '' : 'n'} con los filtros.
+          </p>
+        </Card>
+
+        <div className="leader-calendar-grid mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <Card className="leader-calendar-board overflow-hidden p-4 sm:p-6">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div className="flex gap-2">
                 <NavButton
@@ -172,9 +260,7 @@ export function TeamCalendarPage({ global = false }: { global?: boolean }) {
                             'text-primary grid size-7 place-items-center rounded-lg text-xs font-extrabold',
                             friday && 'text-electric-blue',
                             isToday && 'bg-electric-blue text-white shadow-sm',
-                            isSelected &&
-                              !isToday &&
-                              'bg-calendar-selection text-white shadow-sm',
+                            isSelected && !isToday && 'bg-calendar-selection text-white shadow-sm',
                           )}
                           title={
                             isToday
@@ -219,7 +305,7 @@ export function TeamCalendarPage({ global = false }: { global?: boolean }) {
             )}
           </Card>
 
-          <Card className="h-fit p-5 sm:p-6">
+          <Card className="leader-date-detail h-fit p-5 sm:p-6">
             <CardHeader title="Detalle del viernes" icon={<CalendarDays className="size-5" />} />
             {effectiveSelectedDate ? (
               <>
@@ -375,6 +461,29 @@ function NavButton({
     >
       {children}
     </button>
+  )
+}
+function CalendarFilter({
+  label,
+  type,
+  value,
+  onChange,
+}: {
+  label: string
+  type: 'date'
+  value: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="text-primary text-xs font-extrabold">
+      {label}
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="input-control mt-2"
+      />
+    </label>
   )
 }
 function Legend({ tone, label }: { tone: string; label: string }) {

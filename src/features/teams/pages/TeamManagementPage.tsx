@@ -24,7 +24,9 @@ import {
   X,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
+import { usePortfolioExperience } from '@/features/portfolio/hooks/usePortfolioExperience'
 
 import { Badge } from '@/components/ui/Badge'
 import { SidebarFooter } from '@/components/layout/SidebarFooter'
@@ -66,6 +68,7 @@ function TeamManagementContent({
   navigate: (path: string) => void
 }) {
   const { access } = useAuth()
+  const portfolioExperience = usePortfolioExperience()
   const unreadNotifications = useUnreadNotifications()
   const [query, setQuery] = useState('')
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
@@ -105,7 +108,10 @@ function TeamManagementContent({
     teams.find((team) => team.id === selectedTeamId) ?? filteredTeams[0] ?? teams[0]
 
   return (
-    <div className="app-shell bg-background min-h-screen lg:grid lg:grid-cols-[276px_minmax(0,1fr)]">
+    <div
+      data-experience={portfolioExperience ? 'portfolio' : 'default'}
+      className="app-shell bg-background min-h-screen lg:grid lg:grid-cols-[276px_minmax(0,1fr)]"
+    >
       <a className="skip-link" href="#main-content">
         Ir al contenido principal
       </a>
@@ -150,9 +156,7 @@ function TeamManagementContent({
                 onClick={() => navigate(path)}
                 className={cn(
                   'sidebar-nav-item flex min-h-11 w-full items-center gap-3 rounded-xl px-3.5 text-left text-[13px] font-bold',
-                  active
-                    ? 'sidebar-nav-item-active bg-primary'
-                    : 'sidebar-nav-item-idle',
+                  active ? 'sidebar-nav-item-active bg-primary' : 'sidebar-nav-item-idle',
                 )}
               >
                 <Icon className="size-5 shrink-0" />
@@ -233,8 +237,8 @@ function TeamManagementContent({
 
         {preview ? (
           <div className="preview-mode-banner" role="status">
-            Vista de demostración visual · Los datos mostrados son simulados y no corresponden a
-            una sesión real de Supabase.
+            Vista de demostración visual · Los datos mostrados son simulados y no corresponden a una
+            sesión real de Supabase.
           </div>
         ) : null}
 
@@ -261,7 +265,7 @@ function TeamManagementContent({
             />
           </label>
 
-          <div className="mb-5 flex flex-wrap gap-2.5">
+          <div className="portfolio-team-actions mb-5 flex flex-wrap gap-2.5">
             <Button disabled={!canManage} onClick={() => setActiveAction('create')}>
               <Plus className="size-4" />
               Crear equipo
@@ -314,7 +318,7 @@ function TeamManagementContent({
             </div>
           ) : null}
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_310px]">
+          <div className="portfolio-team-directory grid gap-4 xl:grid-cols-[minmax(0,1fr)_310px]">
             <section className="space-y-3" aria-label="Equipos">
               {teamsQuery.isLoading && !preview ? <TeamLoadingState /> : null}
               {teamsQuery.isError && !preview ? (
@@ -389,11 +393,14 @@ export function TeamManagementPage() {
 }
 
 export function TeamManagementPreviewPage() {
+  const { pathname } = useLocation()
+  const navigate = useExperienceNavigate()
   return (
     <TeamManagementContent
       preview
       navigate={(path) => {
-        window.location.assign(path)
+        if (pathname.startsWith('/sistema-visual/portfolio')) void navigate(path)
+        else window.location.assign(path)
       }}
     />
   )
@@ -486,13 +493,7 @@ function MemberRow({ member }: { member: TeamMemberView }) {
   )
 }
 
-function RotationPanel({
-  team,
-  onViewDetails,
-}: {
-  team?: TeamView
-  onViewDetails: () => void
-}) {
+function RotationPanel({ team, onViewDetails }: { team?: TeamView; onViewDetails: () => void }) {
   const eligible =
     team?.members.filter((member) => getEligibilityStatus(member) === 'eligible') ?? []
   const notEligible =

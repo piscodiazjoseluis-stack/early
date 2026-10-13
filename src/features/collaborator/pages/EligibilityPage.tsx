@@ -1,7 +1,7 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import { useQuery } from '@tanstack/react-query'
 import { CalendarDays, Check, Gauge, History, ShieldCheck, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
@@ -13,7 +13,7 @@ import { getEligibility, getMyRequests } from '@/features/requests/services/requ
 import { collaboratorPreviewEligibility } from '../data/collaborator-preview-data'
 
 export function EligibilityPage({ preview = false }: { preview?: boolean }) {
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const { access } = useAuth()
   const fridays = useMemo(
     () => (preview ? ['2025-05-23', '2025-05-30'] : getUpcomingFridays(4)),
@@ -37,8 +37,8 @@ export function EligibilityPage({ preview = false }: { preview?: boolean }) {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1280px]">
-        <header>
+      <div className="collab-page collab-eligibility-page mx-auto max-w-[1280px]">
+        <header className="collab-page-heading-legacy">
           <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
             Mi elegibilidad
           </h1>

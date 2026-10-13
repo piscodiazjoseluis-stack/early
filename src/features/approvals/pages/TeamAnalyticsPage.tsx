@@ -3,27 +3,51 @@ import {
   BarChart3,
   CheckCircle2,
   Clock3,
+  Download,
   FileText,
   Sparkles,
   UserRoundX,
   XCircle,
 } from 'lucide-react'
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Card } from '@/components/ui/Card'
+import { downloadRequestsCsv, filterHistoricalRequests } from '@/features/reports/request-report'
 import {
   resolvedApprovalRate,
   summarizeRequestStatuses,
 } from '@/features/portfolio/utils/portfolio-analysis'
 
 import { useTeamLeaderWorkspace } from '../hooks/useTeamLeaderWorkspace'
+import type { TeamApprovalRequest } from '../types'
+
+const teamReportStatuses: TeamApprovalRequest['status'][] = [
+  'PENDING_TEAM_LEADER',
+  'RETURNED_FOR_CORRECTION',
+  'PENDING_PORTFOLIO',
+  'REJECTED_BY_TEAM_LEADER',
+  'REJECTED_BY_PORTFOLIO',
+  'FINAL_APPROVED',
+  'CANCELLED',
+  'USED',
+  'NOT_USED',
+  'EXPIRED',
+]
 
 export function TeamAnalyticsPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const preview = location.pathname.startsWith('/sistema-visual')
-  const { requests, team } = useTeamLeaderWorkspace(preview)
+  const { requests: allRequests, team } = useTeamLeaderWorkspace(preview)
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [status, setStatus] = useState<TeamApprovalRequest['status'] | ''>('')
+  const invalidRange = Boolean(dateFrom && dateTo && dateFrom > dateTo)
+  const requests = invalidRange
+    ? []
+    : filterHistoricalRequests(allRequests, { dateFrom, dateTo, status })
   const statusSummary = summarizeRequestStatuses(requests)
   const approved = statusSummary.approved
   const rejected = statusSummary.rejected
@@ -38,8 +62,8 @@ export function TeamAnalyticsPage() {
   }))
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1420px] space-y-5">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="leader-page leader-analytics-page mx-auto max-w-[1420px] space-y-5">
+        <header className="leader-page-heading flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
               BI del equipo
@@ -48,20 +72,63 @@ export function TeamAnalyticsPage() {
               Indicadores operativos limitados a {team?.name ?? 'tu equipo'}.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() =>
-              void navigate(
-                preview ? '/sistema-visual/jefe/analisis-inteligente' : '/analisis-inteligente',
-              )
-            }
-            className="bg-primary hover:bg-electric-blue flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-extrabold text-white transition"
-          >
-            <Sparkles className="size-4" />
-            Interpretar resultados
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                void navigate(
+                  preview ? '/sistema-visual/jefe/analisis-inteligente' : '/analisis-inteligente',
+                )
+              }
+              className="bg-primary hover:bg-electric-blue flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-extrabold text-white transition"
+            >
+              <Sparkles className="size-4" />
+              Interpretar resultados
+            </button>
+            <button
+              type="button"
+              disabled={preview || invalidRange || requests.length === 0}
+              onClick={() => downloadRequestsCsv(requests, 'early-fridays-mi-equipo.csv')}
+              className="border-border text-primary hover:border-electric-blue flex h-11 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-extrabold transition disabled:opacity-50"
+            >
+              <Download className="size-4" /> Exportar CSV
+            </button>
+          </div>
         </header>
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
+        <Card className="leader-filter-panel p-4">
+          <fieldset className="grid gap-3 sm:grid-cols-3">
+            <legend className="sr-only">Filtros del reporte histórico del equipo</legend>
+            <ReportField label="Desde" type="date" value={dateFrom} onChange={setDateFrom} />
+            <ReportField label="Hasta" type="date" value={dateTo} onChange={setDateTo} />
+            <label className="text-primary text-xs font-extrabold">
+              Estado
+              <select
+                className="input-control mt-2"
+                value={status}
+                onChange={(event) =>
+                  setStatus(event.target.value as TeamApprovalRequest['status'] | '')
+                }
+              >
+                <option value="">Todos los estados</option>
+                {teamReportStatuses.map((item) => (
+                  <option key={item} value={item}>
+                    {item.replaceAll('_', ' ')}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </fieldset>
+          {invalidRange ? (
+            <p className="text-danger mt-3 text-xs font-bold" role="alert">
+              La fecha “Desde” no puede ser posterior a la fecha “Hasta”.
+            </p>
+          ) : (
+            <p className="text-muted-foreground mt-3 text-xs">
+              {requests.length} solicitudes visibles para el reporte de {team?.name ?? 'tu equipo'}.
+            </p>
+          )}
+        </Card>
+        <section className="leader-analytics-metrics grid gap-3 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
           <Kpi
             icon={<FileText />}
             label="Total solicitadas"
@@ -112,7 +179,7 @@ export function TeamAnalyticsPage() {
             tone="neutral"
           />
         </section>
-        <section className="grid gap-5 lg:grid-cols-2">
+        <section className="leader-charts-grid grid gap-5 lg:grid-cols-2">
           <Card className="p-6">
             <h2 className="text-primary font-extrabold">Participación por integrante</h2>
             <p className="text-muted-foreground mt-1 text-xs">
@@ -129,7 +196,7 @@ export function TeamAnalyticsPage() {
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className="bg-electric-blue h-full rounded-full transition-all"
+                      className="bg-electric-blue h-full rounded-full"
                       style={{ width: `${count ? Math.max(8, (memberUsed / count) * 100) : 0}%` }}
                     />
                   </div>
@@ -229,7 +296,7 @@ function Kpi({
     neutral: 'bg-slate-100 text-slate-600',
   }
   return (
-    <Card className="group min-h-44 p-5 transition hover:-translate-y-1 hover:shadow-md">
+    <Card className="leader-analytics-kpi group min-h-44 p-5">
       <div className={`grid size-11 place-items-center rounded-xl [&>svg]:size-5 ${colors[tone]}`}>
         {icon}
       </div>
@@ -250,5 +317,29 @@ function SummaryDot({ tone, label, value }: { tone: string; label: string; value
       </span>
       <strong className="text-primary">{value}</strong>
     </div>
+  )
+}
+
+function ReportField({
+  label,
+  type,
+  value,
+  onChange,
+}: {
+  label: string
+  type: 'date'
+  value: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="text-primary text-xs font-extrabold">
+      {label}
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="input-control mt-2"
+      />
+    </label>
   )
 }

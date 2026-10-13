@@ -34,8 +34,8 @@ export function TeamRotationPage() {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1240px] space-y-6">
-        <header>
+      <div className="leader-page leader-rotation-page mx-auto max-w-[1240px] space-y-6">
+        <header className="leader-page-heading">
           <h1 className="text-primary-strong flex items-center gap-3 text-2xl font-extrabold sm:text-3xl">
             <RotateCcw className="text-electric-blue size-7" />
             Rotación del equipo
@@ -45,7 +45,7 @@ export function TeamRotationPage() {
             elegibilidad y uso registrado.
           </p>
         </header>
-        <section className="grid gap-4 sm:grid-cols-3">
+        <section className="leader-metric-strip grid gap-4 sm:grid-cols-3">
           <Metric icon={<UsersRound />} label="Integrantes activos" value={ranked.length} />
           <Metric
             icon={<ShieldCheck />}
@@ -58,8 +58,8 @@ export function TeamRotationPage() {
             value={ranked.reduce((total, item) => total + item.uses, 0)}
           />
         </section>
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <Card className="overflow-hidden">
+        <div className="leader-rotation-grid grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <Card className="leader-records-panel overflow-hidden">
             <div className="border-border border-b p-5 sm:p-6">
               <CardHeader
                 title="Prioridad actual"

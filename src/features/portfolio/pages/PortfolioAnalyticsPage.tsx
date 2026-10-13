@@ -16,6 +16,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   Bar,
   BarChart,
@@ -36,12 +37,14 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
+import { PersistedInsight } from '@/features/insights/components/PersistedInsight'
+import { downloadRequestsCsv, filterHistoricalRequests } from '@/features/reports/request-report'
+import type { TeamApprovalRequest } from '@/features/approvals/types'
 
 import { getPortfolioWorkspace } from '../services/portfolio-service'
 import {
   approvalSla,
   approvedStatuses,
-  filterPortfolioRequests,
   lowParticipationThreshold,
   pendingStatuses,
   portfolioPeople,
@@ -55,11 +58,27 @@ import {
 
 type Tone = 'blue' | 'green' | 'red' | 'amber' | 'purple'
 const chartColors = ['#12ad69', '#ff5d67', '#ffb020', '#94a3b8', '#8b5cf6']
+const reportStatuses: TeamApprovalRequest['status'][] = [
+  'PENDING_TEAM_LEADER',
+  'RETURNED_FOR_CORRECTION',
+  'PENDING_PORTFOLIO',
+  'REJECTED_BY_TEAM_LEADER',
+  'REJECTED_BY_PORTFOLIO',
+  'FINAL_APPROVED',
+  'CANCELLATION_REQUESTED',
+  'CANCELLED',
+  'USED',
+  'NOT_USED',
+  'EXPIRED',
+]
 
 export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?: boolean }) {
+  const visualPreview = useLocation().pathname.startsWith('/sistema-visual/portfolio')
   const [peopleModalOpen, setPeopleModalOpen] = useState(false)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [teamFilter, setTeamFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState<TeamApprovalRequest['status'] | ''>('')
   const [renderedAt] = useState(() => Date.now())
   const query = useQuery({
     queryKey: ['portfolio-workspace'],
@@ -69,8 +88,15 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
   })
   const allRequests = query.data?.requests ?? []
   const invalidDateRange = Boolean(dateFrom && dateTo && dateFrom > dateTo)
-  const requests = invalidDateRange ? [] : filterPortfolioRequests(allRequests, dateFrom, dateTo)
   const teams = query.data?.teams ?? []
+  const requests = invalidDateRange
+    ? []
+    : filterHistoricalRequests(allRequests, {
+        dateFrom,
+        dateTo,
+        teamName: teamFilter,
+        status: statusFilter,
+      })
   const people = portfolioPeople(teams)
   const approved = requests.filter((request) => approvedStatuses.has(request.status))
   const rejected = requests.filter((request) => rejectedStatuses.has(request.status))
@@ -124,8 +150,10 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1540px] space-y-5">
-        <header className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+      <div
+        className={`portfolio-page portfolio-analytics ${insightsOnly ? 'portfolio-insights' : ''} mx-auto max-w-[1540px] space-y-5`}
+      >
+        <header className="portfolio-report-heading flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
               {insightsOnly ? 'Análisis inteligente' : 'BI y analítica'}
@@ -141,12 +169,46 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
                 <DateField label="Desde" value={dateFrom} onChange={setDateFrom} />
                 <span className="text-muted-foreground hidden pb-2 sm:block">—</span>
                 <DateField label="Hasta" value={dateTo} min={dateFrom} onChange={setDateTo} />
-                {dateFrom || dateTo ? (
+                <label className="text-primary text-[10px] font-extrabold">
+                  Equipo
+                  <select
+                    className="input-control mt-1 h-9 min-w-40 text-xs"
+                    value={teamFilter}
+                    onChange={(event) => setTeamFilter(event.target.value)}
+                  >
+                    <option value="">Todos</option>
+                    {teams.map((team) => (
+                      <option key={team.id} value={team.name}>
+                        {team.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-primary text-[10px] font-extrabold">
+                  Estado
+                  <select
+                    className="input-control mt-1 h-9 min-w-44 text-xs"
+                    value={statusFilter}
+                    onChange={(event) =>
+                      setStatusFilter(event.target.value as TeamApprovalRequest['status'] | '')
+                    }
+                  >
+                    <option value="">Todos</option>
+                    {reportStatuses.map((status) => (
+                      <option key={status} value={status}>
+                        {status.replaceAll('_', ' ')}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {dateFrom || dateTo || teamFilter || statusFilter ? (
                   <button
                     type="button"
                     onClick={() => {
                       setDateFrom('')
                       setDateTo('')
+                      setTeamFilter('')
+                      setStatusFilter('')
                     }}
                     className="text-muted-foreground hover:bg-info-soft hover:text-electric-blue grid size-10 place-items-center rounded-lg transition"
                     aria-label="Limpiar filtro de fechas"
@@ -161,6 +223,14 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
                 dateTo={dateTo}
                 disabled={invalidDateRange || requests.length === 0}
               />
+              <button
+                type="button"
+                disabled={invalidDateRange || requests.length === 0}
+                onClick={() => downloadRequestsCsv(requests, 'early-fridays-historico.csv')}
+                className="border-border text-primary hover:border-electric-blue hover:text-electric-blue flex h-11 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-extrabold transition disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Download className="size-4" /> Exportar CSV
+              </button>
             </div>
           ) : (
             <Badge tone="info">
@@ -185,7 +255,9 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
           </p>
         ) : null}
 
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {insightsOnly ? <PersistedInsight scope="GLOBAL" preview={visualPreview} /> : null}
+
+        <section className="portfolio-report-metrics grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <Kpi
             icon={<FileText />}
             label="Solicitudes"
@@ -232,7 +304,7 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
 
         {!insightsOnly ? (
           <>
-            <section className="grid gap-5 xl:grid-cols-3">
+            <section className="portfolio-chart-overview grid gap-5 xl:grid-cols-3">
               <ChartCard
                 title="Uso confirmado por equipo"
                 subtitle="Personas con uso confirmado sobre el total del equipo."
@@ -316,7 +388,7 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
               </ChartCard>
             </section>
 
-            <section className="grid gap-5 xl:grid-cols-[1.08fr_1.08fr_1fr] 2xl:grid-cols-[1.12fr_1.08fr_0.9fr]">
+            <section className="portfolio-chart-evidence grid gap-5 xl:grid-cols-[1.08fr_1.08fr_1fr] 2xl:grid-cols-[1.12fr_1.08fr_0.9fr]">
               <ChartCard
                 title="Distribución de Early utilizados por persona"
                 subtitle="Solo cuenta registros con uso confirmado."
@@ -416,7 +488,7 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
               </p>
             </div>
           </div>
-          <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
+          <div className="portfolio-insight-grid grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
             <Insight icon={<Lightbulb />} title="Hallazgo principal" tone="blue">
               {critical.length
                 ? `${critical.length} solicitudes de Portfolio superaron el SLA de 24 horas y requieren atención inmediata.`
@@ -447,9 +519,9 @@ export function PortfolioAnalyticsPage({ insightsOnly = false }: { insightsOnly?
               <h2 className="text-primary font-extrabold">Cómo se generan estos insights</h2>
               <p className="text-muted-foreground mt-2 text-xs leading-5">
                 Alcance: todo el portfolio ({teams.length} equipos visibles). Actualmente son
-                análisis determinísticos y auditables sobre datos reales de Supabase: estados,
-                SLA de 24 horas, fechas, equipo y confirmación de uso. No se está invocando un
-                modelo generativo ni se inventan conclusiones.
+                análisis determinísticos y auditables sobre datos reales de Supabase: estados, SLA
+                de 24 horas, fechas, equipo y confirmación de uso. No se está invocando un modelo
+                generativo ni se inventan conclusiones.
               </p>
             </div>
           </div>
@@ -485,7 +557,7 @@ function Kpi({
     purple: 'bg-[#f1edff] text-[#7557d5]',
   }
   return (
-    <Card className="hover:border-electric-blue/35 p-4 transition hover:-translate-y-1 hover:shadow-lg">
+    <Card className="portfolio-kpi hover:border-electric-blue/35 p-4 transition hover:-translate-y-1 hover:shadow-lg">
       <span className={`grid size-10 place-items-center rounded-xl [&>svg]:size-5 ${styles[tone]}`}>
         {icon}
       </span>
@@ -505,7 +577,7 @@ function ChartCard({
   children: React.ReactNode
 }) {
   return (
-    <Card className="p-5">
+    <Card className="portfolio-chart p-5">
       <h2 className="text-primary font-extrabold">{title}</h2>
       <p className="text-muted-foreground mt-1 text-xs">{subtitle}</p>
       <div className="mt-4 h-72">{children}</div>

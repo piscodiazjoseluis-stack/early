@@ -108,9 +108,24 @@ export function TeamLeaderDashboardPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="leader-page leader-dashboard space-y-6">
+        <header className="leader-page-heading">
+          <div>
+            <h1>Gestión de tu equipo</h1>
+            <p>
+              {team?.name ?? 'Tu equipo'} · Revisa pendientes, rotación y resultados del beneficio.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="leader-primary-link"
+            onClick={() => void navigate(to('/aprobaciones'))}
+          >
+            Abrir aprobaciones <ArrowRight className="size-4" aria-hidden="true" />
+          </button>
+        </header>
         <section
-          className="team-leader-kpi-grid grid gap-4 sm:grid-cols-2 md:grid-cols-3"
+          className="leader-dashboard-metrics team-leader-kpi-grid grid gap-4 sm:grid-cols-2 md:grid-cols-3"
           aria-label="Indicadores del equipo"
         >
           <Kpi
@@ -157,8 +172,82 @@ export function TeamLeaderDashboardPage() {
           />
         </section>
 
-        <section className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_minmax(540px,0.84fr)]">
-          <Card className="min-w-0 p-5 sm:p-6">
+        <section className="leader-work-grid">
+          <Card className="leader-pending-panel min-w-0 p-5 sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-primary text-lg font-extrabold">Solicitudes pendientes</h2>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  Requieren tu decisión como jefe directo.
+                </p>
+              </div>
+              <Badge tone="info">{pending.length}</Badge>
+            </div>
+            <div className="mt-5 space-y-3">
+              {pending.length ? (
+                pending.slice(0, 3).map((request) => (
+                  <article
+                    key={request.id}
+                    className="border-border hover:border-electric-blue/35 grid items-center gap-3 rounded-2xl border p-3 transition sm:grid-cols-[minmax(0,1fr)_125px_auto]"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Avatar name={request.requesterName} />
+                      <div className="min-w-0">
+                        <p className="text-primary truncate text-xs font-extrabold">
+                          {request.requesterName}
+                        </p>
+                        <p className="text-muted-foreground truncate text-[9px]">
+                          {request.requesterJobTitle}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="text-muted-foreground size-4" />
+                      <div>
+                        <p className="text-muted-foreground text-[10px] font-bold">Viernes</p>
+                        <p className="text-primary text-xs font-extrabold">
+                          {formatDate(request.requestedDate)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <DecisionShortcut
+                        icon={<Check />}
+                        label={`Revisar aprobación de ${request.requesterName}`}
+                        tone="success"
+                        onClick={() => void navigate(to(`/aprobaciones/${request.id}`))}
+                      />
+                      <DecisionShortcut
+                        icon={<X />}
+                        label={`Revisar rechazo de ${request.requesterName}`}
+                        tone="danger"
+                        onClick={() => void navigate(to(`/aprobaciones/${request.id}`))}
+                      />
+                      <DecisionShortcut
+                        icon={<Eye />}
+                        label={`Ver solicitud de ${request.requesterName}`}
+                        tone="neutral"
+                        onClick={() => void navigate(to(`/aprobaciones/${request.id}`))}
+                      />
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <p className="bg-success-soft text-success rounded-2xl p-5 text-sm font-bold">
+                  No tienes solicitudes pendientes de revisión.
+                </p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => void navigate(to('/aprobaciones'))}
+              className="text-electric-blue hover:text-primary mt-5 flex w-full items-center justify-center gap-2 text-sm font-extrabold transition"
+            >
+              Ver todas las solicitudes <ArrowRight className="size-4" />
+            </button>
+          </Card>
+
+          <Card className="leader-priority-panel min-w-0 p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-primary text-lg font-extrabold">Prioridad del equipo</h2>
@@ -232,83 +321,9 @@ export function TeamLeaderDashboardPage() {
               Ver análisis completo <ArrowRight className="size-4" />
             </button>
           </Card>
-
-          <Card className="min-w-0 p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-primary text-lg font-extrabold">Solicitudes pendientes</h2>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  Requieren tu decisión como jefe directo.
-                </p>
-              </div>
-              <Badge tone="info">{pending.length}</Badge>
-            </div>
-            <div className="mt-5 space-y-3">
-              {pending.length ? (
-                pending.slice(0, 3).map((request) => (
-                  <article
-                    key={request.id}
-                    className="border-border hover:border-electric-blue/35 grid items-center gap-3 rounded-2xl border p-3 transition sm:grid-cols-[minmax(0,1fr)_125px_auto]"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <Avatar name={request.requesterName} />
-                      <div className="min-w-0">
-                        <p className="text-primary truncate text-xs font-extrabold">
-                          {request.requesterName}
-                        </p>
-                        <p className="text-muted-foreground truncate text-[9px]">
-                          {request.requesterJobTitle}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CalendarDays className="text-muted-foreground size-4" />
-                      <div>
-                        <p className="text-muted-foreground text-[10px] font-bold">Viernes</p>
-                        <p className="text-primary text-xs font-extrabold">
-                          {formatDate(request.requestedDate)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <DecisionShortcut
-                        icon={<Check />}
-                        label={`Revisar aprobación de ${request.requesterName}`}
-                        tone="success"
-                        onClick={() => void navigate(to(`/aprobaciones/${request.id}`))}
-                      />
-                      <DecisionShortcut
-                        icon={<X />}
-                        label={`Revisar rechazo de ${request.requesterName}`}
-                        tone="danger"
-                        onClick={() => void navigate(to(`/aprobaciones/${request.id}`))}
-                      />
-                      <DecisionShortcut
-                        icon={<Eye />}
-                        label={`Ver solicitud de ${request.requesterName}`}
-                        tone="neutral"
-                        onClick={() => void navigate(to(`/aprobaciones/${request.id}`))}
-                      />
-                    </div>
-                  </article>
-                ))
-              ) : (
-                <p className="bg-success-soft text-success rounded-2xl p-5 text-sm font-bold">
-                  No tienes solicitudes pendientes de revisión.
-                </p>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => void navigate(to('/aprobaciones'))}
-              className="text-electric-blue hover:text-primary mt-5 flex w-full items-center justify-center gap-2 text-sm font-extrabold transition"
-            >
-              Ver todas las solicitudes <ArrowRight className="size-4" />
-            </button>
-          </Card>
         </section>
 
-        <section className="grid gap-5 lg:grid-cols-3">
+        <section className="leader-context-grid grid gap-5 lg:grid-cols-3">
           <Card className="p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -417,7 +432,7 @@ function Kpi({
     neutral: 'bg-[#f2ecff] text-[#7951bd]',
   }
   return (
-    <Card className="group hover:border-electric-blue/35 flex min-h-44 flex-col p-5 transition hover:-translate-y-1 hover:shadow-md">
+    <Card className={`leader-kpi leader-kpi-${tone} group flex flex-col p-5`}>
       <span className={`grid size-11 place-items-center rounded-xl [&>svg]:size-5 ${colors[tone]}`}>
         {icon}
       </span>

@@ -1,10 +1,10 @@
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import FullCalendar from '@fullcalendar/react'
 import { useQuery } from '@tanstack/react-query'
 import { CalendarDays, ChevronRight, Clock3, Info } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
@@ -18,8 +18,21 @@ import { groupRequestsByDate } from '@/features/requests/utils/request-calendar'
 import { requestStatusPresentation } from '@/features/requests/utils/request-status'
 import { useCurrentDate } from '@/hooks/useCurrentDate'
 
+const personalCalendarStatuses: RequestView['status'][] = [
+  'PENDING_TEAM_LEADER',
+  'RETURNED_FOR_CORRECTION',
+  'PENDING_PORTFOLIO',
+  'REJECTED_BY_TEAM_LEADER',
+  'REJECTED_BY_PORTFOLIO',
+  'FINAL_APPROVED',
+  'CANCELLED',
+  'USED',
+  'NOT_USED',
+  'EXPIRED',
+]
+
 export function PersonalCalendarPage({ preview = false }: { preview?: boolean }) {
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const today = useCurrentDate()
   const requestsQuery = useQuery({
     queryKey: ['my-requests', 'calendar'],
@@ -30,14 +43,30 @@ export function PersonalCalendarPage({ preview = false }: { preview?: boolean })
     () => (preview ? requestPreviewData : (requestsQuery.data ?? [])),
     [preview, requestsQuery.data],
   )
-  const groups = useMemo(() => groupRequestsByDate(requests), [requests])
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [statusFilter, setStatusFilter] = useState<RequestView['status'] | ''>('')
+  const filteredRequests = useMemo(
+    () =>
+      requests.filter((request) => {
+        if (dateFrom && request.requestedDate < dateFrom) return false
+        if (dateTo && request.requestedDate > dateTo) return false
+        if (statusFilter && request.status !== statusFilter) return false
+        return true
+      }),
+    [dateFrom, dateTo, requests, statusFilter],
+  )
+  const groups = useMemo(() => groupRequestsByDate(filteredRequests), [filteredRequests])
   const currentRequests = useMemo(
     () => Array.from(groups.values(), (group) => group.current),
     [groups],
   )
   const [selectedDate, setSelectedDate] = useState<string | null>(preview ? '2025-05-23' : null)
   const [historyOpen, setHistoryOpen] = useState(false)
-  const effectiveSelectedDate = selectedDate ?? currentRequests[0]?.requestedDate ?? null
+  const effectiveSelectedDate =
+    selectedDate && groups.has(selectedDate)
+      ? selectedDate
+      : (currentRequests[0]?.requestedDate ?? null)
   const selectedGroup = effectiveSelectedDate ? groups.get(effectiveSelectedDate) : undefined
   const selected = selectedGroup?.current
   const events = useMemo(
@@ -73,8 +102,8 @@ export function PersonalCalendarPage({ preview = false }: { preview?: boolean })
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1420px]">
-        <header>
+      <div className="collab-page collab-calendar-page mx-auto max-w-[1420px]">
+        <header className="collab-page-heading-legacy">
           <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">Mi calendario</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             El calendario muestra el estado de tu solicitud más reciente por viernes; el histórico
@@ -87,6 +116,43 @@ export function PersonalCalendarPage({ preview = false }: { preview?: boolean })
             <CalendarLegend tone="bg-muted-foreground" label="Cancelado o no utilizado" />
           </div>
         </header>
+
+        <Card className="mt-5 p-4">
+          <fieldset className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <legend className="sr-only">Filtros de mi calendario</legend>
+            <CalendarField label="Desde" value={dateFrom} onChange={setDateFrom} />
+            <CalendarField label="Hasta" value={dateTo} onChange={setDateTo} />
+            <label className="text-primary text-xs font-extrabold">
+              Equipo
+              <input
+                className="input-control mt-2"
+                value={requests[0]?.teamName ?? 'Mi equipo'}
+                disabled
+              />
+            </label>
+            <label className="text-primary text-xs font-extrabold">
+              Estado
+              <select
+                className="input-control mt-2"
+                value={statusFilter}
+                onChange={(event) =>
+                  setStatusFilter(event.target.value as RequestView['status'] | '')
+                }
+              >
+                <option value="">Todos los estados</option>
+                {personalCalendarStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {requestStatusPresentation[status].label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </fieldset>
+          <p className="text-muted-foreground mt-3 text-xs">
+            {currentRequests.length} fecha{currentRequests.length === 1 ? '' : 's'} con actividad
+            visible.
+          </p>
+        </Card>
 
         <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
           <Card className="calendar-shell overflow-hidden p-4 sm:p-6">
@@ -275,6 +341,28 @@ function CalendarLegend({ tone, label }: { tone: string; label: string }) {
       <span className={`size-2.5 rounded-full ${tone}`} />
       {label}
     </span>
+  )
+}
+
+function CalendarField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="text-primary text-xs font-extrabold">
+      {label}
+      <input
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="input-control mt-2"
+      />
+    </label>
   )
 }
 

@@ -1,9 +1,10 @@
-import { AlertTriangle, Lightbulb, ShieldCheck, Sparkles, UsersRound } from 'lucide-react'
+import { AlertTriangle, Lightbulb, ShieldCheck, UsersRound } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
+import { PersistedInsight } from '@/features/insights/components/PersistedInsight'
 
 import { useTeamLeaderWorkspace } from '../hooks/useTeamLeaderWorkspace'
 
@@ -19,13 +20,10 @@ export function TeamInsightsPage() {
       requests.filter((r) => r.requesterId === m.userId && r.status === 'USED').length,
     ]),
   )
-  const recommendation = members.toSorted(
-    (a, b) => (usage.get(a.userId) ?? 0) - (usage.get(b.userId) ?? 0),
-  )[0]
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1240px] space-y-6">
-        <header>
+      <div className="leader-page leader-insights-page mx-auto max-w-[1240px] space-y-6">
+        <header className="leader-page-heading">
           <div className="flex items-center gap-3">
             <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
               Análisis inteligente
@@ -36,29 +34,8 @@ export function TeamInsightsPage() {
             Recomendaciones explicables con evidencia del team; nunca aprueban automáticamente.
           </p>
         </header>
-        <Card className="border-electric-blue/25 bg-gradient-to-br from-white to-[#f3f8ff] p-6 sm:p-8">
-          <div className="flex flex-col gap-5 sm:flex-row">
-            <span className="bg-info-soft text-electric-blue grid size-14 shrink-0 place-items-center rounded-full">
-              <Sparkles className="size-6" />
-            </span>
-            <div>
-              <p className="text-electric-blue text-xs font-extrabold uppercase">
-                Recomendación principal
-              </p>
-              <h2 className="text-primary mt-2 text-xl font-extrabold sm:text-2xl">
-                {recommendation
-                  ? `${recommendation.fullName} tiene mayor oportunidad para el próximo viernes.`
-                  : 'No hay integrantes disponibles para analizar.'}
-              </h2>
-              <p className="text-muted-foreground mt-3 max-w-3xl text-sm leading-6">
-                {recommendation
-                  ? `Registra ${usage.get(recommendation.userId) ?? 0} usos confirmados y su estado actual es ${recommendation.isEligible ? 'elegible' : 'no elegible'}. La recomendación debe contrastarse con cobertura operativa antes de decidir.`
-                  : 'Agrega integrantes activos para generar recomendaciones.'}
-              </p>
-            </div>
-          </div>
-        </Card>
-        <section className="grid gap-5 lg:grid-cols-3">
+        <PersistedInsight scope="TEAM" teamId={team?.id} preview={preview} />
+        <section className="leader-insight-summary grid gap-5 lg:grid-cols-3">
           <Insight icon={<Lightbulb />} title="Hallazgo principal" tone="blue">
             {requests.length
               ? `${requests.length} solicitudes registradas en ${teamName}, incluidas las del jefe directo, alimentan este análisis.`

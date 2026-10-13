@@ -13,7 +13,7 @@ import {
   UsersRound,
   XCircle,
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useExperienceNavigate } from '@/hooks/useExperienceNavigate'
 import {
   CartesianGrid,
   Line,
@@ -45,7 +45,7 @@ import {
 } from '../utils/portfolio-analysis'
 
 export function PortfolioDashboardPage() {
-  const navigate = useNavigate()
+  const navigate = useExperienceNavigate()
   const { access } = useAuth()
   const query = useQuery({
     queryKey: ['portfolio-workspace'],
@@ -76,8 +76,8 @@ export function PortfolioDashboardPage() {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-[1540px] space-y-5">
-        <header>
+      <div className="portfolio-page portfolio-dashboard mx-auto max-w-[1540px] space-y-5">
+        <header className="portfolio-page-heading">
           <h1 className="text-primary-strong text-2xl font-extrabold sm:text-3xl">
             ¡Buenos días, {firstName}!
           </h1>
@@ -86,7 +86,7 @@ export function PortfolioDashboardPage() {
           </p>
         </header>
 
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8">
+        <section className="portfolio-executive-metrics grid gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8">
           <Kpi
             icon={<FileText />}
             label="Solicitudes totales"
@@ -145,14 +145,86 @@ export function PortfolioDashboardPage() {
           />
         </section>
 
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.7fr)]">
-          <Card className="p-5">
+        <section className="portfolio-supervision-grid grid gap-5">
+          <div className="portfolio-attention-column">
+            <Card className="portfolio-attention-panel p-5">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-primary flex items-center gap-2 font-extrabold">
+                  <AlertTriangle className="text-danger size-5" /> Pendientes críticos
+                </h2>
+                <Badge tone={critical.length ? 'danger' : 'success'}>{critical.length}</Badge>
+              </div>
+              <p className="text-muted-foreground mt-2 text-xs">
+                Crítico cuando Portfolio lleva más de 24 horas sin decidir.
+              </p>
+              <div className="mt-3 max-h-72 overflow-y-auto pr-1">
+                {critical.slice(0, 4).map(({ request, sla }) => (
+                  <button
+                    key={request.id}
+                    type="button"
+                    onClick={() => void navigate(`/aprobaciones/${request.id}`)}
+                    className="border-danger/20 hover:bg-danger-soft/40 flex w-full items-center gap-3 border-b py-3 text-left transition last:border-b-0"
+                  >
+                    <Avatar name={request.requesterName} />
+                    <span className="min-w-0 flex-1">
+                      <span className="text-primary block truncate text-sm font-extrabold">
+                        {request.requesterName}
+                      </span>
+                      <span className="text-muted-foreground block truncate text-xs">
+                        {request.teamName} · {formatDate(request.requestedDate)}
+                      </span>
+                    </span>
+                    <span className="text-danger text-right text-xs font-bold">
+                      {Math.floor(sla.elapsedHours)} h<br />
+                      en espera
+                    </span>
+                  </button>
+                ))}
+                {!critical.length ? (
+                  <p className="text-muted-foreground py-8 text-center text-sm">
+                    No hay decisiones fuera del SLA.
+                  </p>
+                ) : null}
+              </div>
+              <LinkButton
+                label="Ver aprobaciones finales"
+                onClick={() => void navigate('/aprobaciones')}
+                full
+              />
+            </Card>
+            <Card className="border-electric-blue/30 bg-gradient-to-br from-white to-[#f2f7ff] p-5">
+              <div className="flex items-center gap-2">
+                <Sparkles className="text-electric-blue size-5" />
+                <h2 className="text-primary font-extrabold">Resumen inteligente</h2>
+              </div>
+              <Badge tone="info" className="mt-3">
+                Motor de reglas explicables
+              </Badge>
+              <p className="text-primary mt-4 text-sm leading-6 font-bold">
+                {critical.length
+                  ? `${critical.length} solicitudes superaron el SLA de 24 horas y requieren decisión inmediata.`
+                  : 'No existen solicitudes fuera del SLA de Portfolio.'}
+              </p>
+              <p className="text-muted-foreground mt-3 text-xs leading-5">
+                {participation[0]
+                  ? `${participation[0].name} tiene la menor cobertura de uso confirmado (${participation[0].value}%). Prioriza personas elegibles sin usos.`
+                  : 'Aún no hay equipos con personas asignadas para comparar participación.'}
+              </p>
+              <LinkButton
+                label="Ver análisis completo"
+                onClick={() => void navigate('/analisis-inteligente')}
+                full
+              />
+            </Card>
+          </div>
+
+          <Card className="portfolio-team-panel p-5">
             <Title
               title="Equipos globales"
               action="Ver todos los equipos"
               onClick={() => void navigate('/equipos')}
             />
-            <div className="mt-4 grid gap-3 lg:grid-cols-3">
+            <div className="portfolio-team-ledger mt-4 grid gap-3">
               {teams.map((team, index) => {
                 const teamRequests = requests.filter((request) => request.teamName === team.name)
                 const statusSummary = summarizeRequestStatuses(teamRequests)
@@ -229,55 +301,9 @@ export function PortfolioDashboardPage() {
               })}
             </div>
           </Card>
-
-          <Card className="p-5">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-primary flex items-center gap-2 font-extrabold">
-                <AlertTriangle className="text-danger size-5" /> Pendientes críticos
-              </h2>
-              <Badge tone={critical.length ? 'danger' : 'success'}>{critical.length}</Badge>
-            </div>
-            <p className="text-muted-foreground mt-2 text-xs">
-              Crítico cuando Portfolio lleva más de 24 horas sin decidir.
-            </p>
-            <div className="mt-3 max-h-72 overflow-y-auto pr-1">
-              {critical.slice(0, 4).map(({ request, sla }) => (
-                <button
-                  key={request.id}
-                  type="button"
-                  onClick={() => void navigate(`/aprobaciones/${request.id}`)}
-                  className="border-danger/20 hover:bg-danger-soft/40 flex w-full items-center gap-3 border-b py-3 text-left transition last:border-b-0"
-                >
-                  <Avatar name={request.requesterName} />
-                  <span className="min-w-0 flex-1">
-                    <span className="text-primary block truncate text-sm font-extrabold">
-                      {request.requesterName}
-                    </span>
-                    <span className="text-muted-foreground block truncate text-xs">
-                      {request.teamName} · {formatDate(request.requestedDate)}
-                    </span>
-                  </span>
-                  <span className="text-danger text-right text-xs font-bold">
-                    {Math.floor(sla.elapsedHours)} h<br />
-                    en espera
-                  </span>
-                </button>
-              ))}
-              {!critical.length ? (
-                <p className="text-muted-foreground py-8 text-center text-sm">
-                  No hay decisiones fuera del SLA.
-                </p>
-              ) : null}
-            </div>
-            <LinkButton
-              label="Ver aprobaciones finales"
-              onClick={() => void navigate('/aprobaciones')}
-              full
-            />
-          </Card>
         </section>
 
-        <section className="grid gap-5 xl:grid-cols-[1fr_0.9fr_1.2fr_1fr]">
+        <section className="portfolio-context-grid grid gap-5">
           <Card className="p-5">
             <h2 className="text-primary flex items-center gap-2 font-extrabold">
               <CalendarDays className="text-electric-blue size-5" /> Calendario global
@@ -392,39 +418,12 @@ export function PortfolioDashboardPage() {
               ))}
             </div>
           </Card>
-
-          <Card className="border-electric-blue/30 bg-gradient-to-br from-white to-[#f2f7ff] p-5">
-            <div className="flex items-center gap-2">
-              <Sparkles className="text-electric-blue size-5" />
-              <h2 className="text-primary font-extrabold">Resumen inteligente</h2>
-            </div>
-            <Badge tone="info" className="mt-3">
-              Motor de reglas explicables
-            </Badge>
-            <p className="text-primary mt-4 text-sm leading-6 font-bold">
-              {critical.length
-                ? `${critical.length} solicitudes superaron el SLA de 24 horas y requieren decisión inmediata.`
-                : 'No existen solicitudes fuera del SLA de Portfolio.'}
-            </p>
-            <p className="text-muted-foreground mt-3 text-xs leading-5">
-              {participation[0]
-                ? `${participation[0].name} tiene la menor cobertura de uso confirmado (${participation[0].value}%). Prioriza personas elegibles sin usos.`
-                : 'Aún no hay equipos con personas asignadas para comparar participación.'}
-            </p>
-            <LinkButton
-              label="Ver análisis completo"
-              onClick={() => void navigate('/analisis-inteligente')}
-              full
-            />
-          </Card>
         </section>
 
-        <Card className="p-5 sm:p-6">
+        <Card className="portfolio-evolution p-5 sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-primary font-extrabold">
-                Solicitudes por viernes solicitado
-              </h2>
+              <h2 className="text-primary font-extrabold">Solicitudes por viernes solicitado</h2>
               <p className="text-muted-foreground mt-1 text-xs">
                 Historial completo según la fecha solicitada del beneficio.
               </p>
@@ -492,7 +491,7 @@ function Kpi({
     purple: 'bg-[#f1edff] text-[#7557d5]',
   }
   return (
-    <Card className="group hover:border-electric-blue/35 p-4 transition hover:-translate-y-1 hover:shadow-lg">
+    <Card className="portfolio-kpi group hover:border-electric-blue/35 p-4 transition hover:-translate-y-1 hover:shadow-lg">
       <span className={`grid size-9 place-items-center rounded-xl [&>svg]:size-4 ${colors[tone]}`}>
         {icon}
       </span>

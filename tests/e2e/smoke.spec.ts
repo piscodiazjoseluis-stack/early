@@ -36,3 +36,38 @@ test('el detalle no desborda horizontalmente en móvil', async ({ page }, testIn
 
   expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1)
 })
+
+test('el calendario operativo filtra por estado sin errores', async ({ page }) => {
+  const pageErrors: Error[] = []
+  page.on('pageerror', (error) => pageErrors.push(error))
+
+  await page.goto('/sistema-visual/jefe/calendario')
+
+  await expect(page.getByRole('heading', { name: 'Calendario del equipo' })).toBeVisible()
+  await page.getByRole('combobox', { name: 'Estado' }).selectOption('USED')
+  await expect(page.getByText('1 registro coincide con los filtros.')).toBeVisible()
+  expect(pageErrors).toEqual([])
+})
+
+test('el reporte histórico aplica filtros y protege la exportación de la vista visual', async ({
+  page,
+}) => {
+  await page.goto('/sistema-visual/jefe/bi-equipo')
+
+  await page.getByRole('combobox', { name: 'Estado' }).selectOption('USED')
+  await expect(
+    page.getByText('1 solicitudes visibles para el reporte de Team Hugo Ramirez.'),
+  ).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Exportar CSV' })).toBeDisabled()
+})
+
+test('la vista visual de análisis no escribe recomendaciones', async ({ page }) => {
+  await page.goto('/sistema-visual/jefe/analisis-inteligente')
+
+  await expect(
+    page.getByText(
+      'La generación se habilita al iniciar sesión; la vista visual no escribe datos en Supabase.',
+    ),
+  ).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Generar análisis' })).toBeDisabled()
+})

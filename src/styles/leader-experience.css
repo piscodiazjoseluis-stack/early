@@ -1,0 +1,637 @@
+/* Phase 2: presentation scoped to Team Leader. Shared roles keep their styles. */
+.app-shell[data-experience='leader'] {
+  --leader-ink: #071d49;
+  --leader-line: #d6e3f2;
+  --leader-canvas: #eef5fc;
+  --leader-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  background: var(--leader-canvas);
+}
+
+.app-shell[data-experience='leader'] .app-main {
+  padding-block: 2rem;
+}
+
+.app-shell[data-experience='leader'] .app-main > * {
+  animation: none;
+}
+
+.app-shell[data-experience='leader'] .leader-page {
+  max-width: 1480px;
+  margin-inline: auto;
+}
+
+.app-shell[data-experience='leader'] :is(.leader-page-heading, .collab-page-heading-legacy) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--leader-line);
+}
+
+.app-shell[data-experience='leader']
+  :is(.leader-page-heading, .collab-page-heading-legacy, .leader-approval-heading)
+  h1 {
+  margin: 0;
+  color: var(--leader-ink);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.app-shell[data-experience='leader'] .leader-page-heading p {
+  margin-top: 0.5rem;
+  color: var(--color-muted-foreground);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.app-shell[data-experience='leader'] :is(.enterprise-surface, .collab-records-panel) {
+  border-radius: 16px;
+  border-color: var(--leader-line);
+  box-shadow: 0 8px 24px rgb(7 29 73 / 4%);
+}
+
+.app-shell[data-experience='leader'] :is(table, dl, .leader-kpi, .leader-analytics-kpi) {
+  font-variant-numeric: tabular-nums;
+}
+
+.app-shell[data-experience='leader']
+  :is(button, input, select, textarea, summary, a):focus-visible {
+  outline: 3px solid rgb(23 107 255 / 40%);
+  outline-offset: 3px;
+}
+
+.app-shell[data-experience='leader'] :is(input, textarea) {
+  caret-color: var(--color-electric-blue);
+}
+
+.app-shell[data-experience='leader'] ::selection {
+  color: #071d49;
+  background: #c8e4ff;
+}
+
+.app-shell[data-experience='leader'] .leader-primary-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 1.1rem;
+  border-radius: 12px;
+  color: white;
+  background: var(--color-electric-blue);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  box-shadow: 0 8px 18px rgb(23 107 255 / 16%);
+}
+
+.app-shell[data-experience='leader'] .leader-dashboard-metrics {
+  gap: 0.65rem;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.app-shell[data-experience='leader'] .leader-kpi {
+  position: relative;
+  min-height: 158px;
+  padding: 1rem;
+}
+
+.app-shell[data-experience='leader'] .leader-kpi > span {
+  width: auto;
+  height: auto;
+  justify-content: start;
+  border-radius: 0;
+  background: transparent;
+}
+
+.app-shell[data-experience='leader'] .leader-kpi > p:first-of-type {
+  margin-top: 0.65rem;
+  min-height: 2.5rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.app-shell[data-experience='leader'] .leader-kpi > p:last-of-type {
+  font-size: 1.8rem;
+}
+
+.app-shell[data-experience='leader'] .leader-kpi > button {
+  padding-top: 0.65rem;
+  min-height: 36px;
+}
+
+.app-shell[data-experience='leader'] .leader-kpi:nth-child(-n + 2) {
+  background: #f5f9ff;
+  border-color: #a9c9fc;
+}
+
+.app-shell[data-experience='leader'] .leader-work-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  align-items: stretch;
+  gap: 1.25rem;
+}
+
+.app-shell[data-experience='leader'] .leader-pending-panel {
+  border-color: #accafb;
+  box-shadow: 0 12px 28px rgb(23 107 255 / 7%);
+}
+
+.app-shell[data-experience='leader'] .leader-pending-panel > div:first-child {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--leader-line);
+}
+
+.app-shell[data-experience='leader'] .leader-pending-panel article {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  border-radius: 12px;
+  padding: 1rem;
+  background: #fafcff;
+}
+
+.app-shell[data-experience='leader'] .leader-pending-panel article > div:first-child {
+  grid-column: 1 / -1;
+}
+
+.app-shell[data-experience='leader'] .leader-pending-panel article > div:first-child p:first-child {
+  font-size: 0.875rem;
+}
+
+.app-shell[data-experience='leader'] .leader-pending-panel article > div:first-child p:last-child {
+  font-size: 0.72rem;
+}
+
+.app-shell[data-experience='leader'] .leader-pending-panel article button {
+  width: 44px;
+  height: 44px;
+}
+
+.app-shell[data-experience='leader'] .leader-priority-panel article {
+  padding-block: 1.05rem;
+}
+
+.app-shell[data-experience='leader'] .leader-context-grid {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.85fr) minmax(0, 1fr);
+}
+
+.app-shell[data-experience='leader'] .leader-context-grid > :is(section, div) {
+  box-shadow: none;
+}
+
+.app-shell[data-experience='leader'] .leader-context-grid > * > div > span {
+  width: auto;
+  height: auto;
+  margin-top: 0.15rem;
+  background: transparent;
+}
+
+.app-shell[data-experience='leader'] .leader-approvals-grid {
+  grid-template-columns: minmax(0, 1fr) 260px;
+  align-items: start;
+}
+
+.app-shell[data-experience='leader'] .leader-approval-heading {
+  align-items: flex-start;
+  padding-bottom: 0.75rem;
+}
+
+.app-shell[data-experience='leader'] .leader-approval-heading > span {
+  width: 48px;
+  height: 48px;
+  font-size: 1rem;
+  color: #10336d;
+  background: #e3efff;
+}
+
+.app-shell[data-experience='leader'] .leader-approval-summary {
+  padding-top: 0;
+}
+
+.app-shell[data-experience='leader'] .leader-filter-panel {
+  padding: 1.15rem;
+  box-shadow: none;
+  background: #f9fcff;
+}
+
+.app-shell[data-experience='leader'] .leader-records-panel table {
+  min-width: 820px;
+  font-size: 0.79rem;
+}
+
+.app-shell[data-experience='leader'] .leader-records-panel th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f1f6fc;
+  white-space: nowrap;
+}
+
+.app-shell[data-experience='leader'] .leader-records-panel td {
+  padding-block: 1.15rem;
+}
+
+.app-shell[data-experience='leader'] .leader-records-panel button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.app-shell[data-experience='leader'] .leader-mobile-request-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--leader-line);
+  font-size: 0.75rem;
+}
+
+.app-shell[data-experience='leader'] .leader-mobile-request-facts dt {
+  color: var(--color-muted-foreground);
+}
+
+.app-shell[data-experience='leader'] .leader-mobile-request-facts dd {
+  margin-top: 0.25rem;
+  color: #10336d;
+  font-weight: 700;
+}
+
+.app-shell[data-experience='leader'] .leader-object-header {
+  background: linear-gradient(120deg, white 65%, #f3f8ff);
+}
+
+.app-shell[data-experience='leader'] .leader-object-header > div {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+  border: 0;
+}
+
+.app-shell[data-experience='leader'] .leader-object-header > div > div:first-child {
+  grid-column: 1 / -1;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--leader-line);
+}
+
+.app-shell[data-experience='leader'] .leader-object-header > div > div {
+  padding-inline: 0;
+  border-left: 0;
+  border-inline-end-width: 0;
+  justify-content: start;
+}
+
+.app-shell[data-experience='leader'] .leader-review-page {
+  padding-bottom: 7rem;
+}
+
+.app-shell[data-experience='leader'] .leader-review-grid {
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.75fr);
+  align-items: start;
+}
+
+.app-shell[data-experience='leader'] .leader-review-evidence {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.app-shell[data-experience='leader'] .leader-review-evidence > * {
+  margin-block: 0;
+}
+
+.app-shell[data-experience='leader'] .leader-review-validation {
+  grid-column: 1;
+}
+
+.app-shell[data-experience='leader'] .leader-timeline-panel {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  position: static;
+  box-shadow: none;
+}
+
+.app-shell[data-experience='leader'] .leader-timeline-step {
+  position: relative;
+  padding-bottom: 0.25rem;
+}
+
+.app-shell[data-experience='leader'] .leader-timeline-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 26px;
+  bottom: -22px;
+  left: 11px;
+  width: 1px;
+  background: #ccdbee;
+}
+
+.app-shell[data-experience='leader'] .leader-decision-bar {
+  padding: 1rem 1.5rem;
+}
+
+.app-shell[data-experience='leader'] .modal-panel {
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 18px;
+  border-color: var(--leader-line);
+  box-shadow: 0 28px 70px rgb(7 29 73 / 24%);
+}
+
+.app-shell[data-experience='leader'] .modal-panel > header {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--leader-line);
+}
+
+.app-shell[data-experience='leader'] :is(.leader-decision-modal, .leader-usage-modal) {
+  max-width: 560px;
+}
+
+.app-shell[data-experience='leader'] .leader-modal-context {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  background: #f0f6ff;
+  color: #10336d;
+  font-size: 0.8rem;
+}
+
+.app-shell[data-experience='leader'] .leader-metric-strip {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--leader-line);
+  border-radius: 16px;
+  background: white;
+}
+
+.app-shell[data-experience='leader'] .leader-metric-strip > * {
+  margin: 0;
+  border: 0;
+  border-left: 1px solid var(--leader-line);
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+}
+
+.app-shell[data-experience='leader'] .leader-metric-strip > *:first-child {
+  border-left: 0;
+}
+
+.app-shell[data-experience='leader'] .leader-metric-strip > * > span {
+  width: auto;
+  height: auto;
+  background: transparent;
+}
+
+.app-shell[data-experience='leader'] .leader-calendar-grid {
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+.app-shell[data-experience='leader'] .leader-calendar-board {
+  min-width: 0;
+}
+
+.app-shell[data-experience='leader'] .leader-calendar-board button {
+  overflow: hidden;
+}
+
+.app-shell[data-experience='leader'] .leader-date-detail {
+  position: sticky;
+  top: 102px;
+}
+
+.app-shell[data-experience='leader'] .leader-analytics-metrics {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.app-shell[data-experience='leader'] .leader-analytics-metrics > * {
+  grid-column: span 3;
+}
+
+.app-shell[data-experience='leader'] .leader-analytics-metrics > *:nth-child(n + 5) {
+  grid-column: span 4;
+}
+
+.app-shell[data-experience='leader'] .leader-rotation-grid {
+  align-items: start;
+}
+
+.app-shell[data-experience='leader'] .enterprise-surface > header > div > span {
+  width: auto;
+  height: auto;
+  margin-top: 0.3rem;
+  background: transparent;
+}
+
+.app-shell[data-experience='leader'] :is(button, summary) {
+  transition-timing-function: var(--leader-ease);
+}
+
+.app-shell[data-experience='leader'] .leader-analytics-kpi {
+  min-height: 135px;
+  padding: 1.1rem 1.2rem;
+}
+
+.app-shell[data-experience='leader'] .leader-analytics-kpi > div:first-child {
+  float: right;
+  width: auto;
+  height: auto;
+  margin-top: 0.15rem;
+  background: transparent;
+}
+
+.app-shell[data-experience='leader'] .leader-analytics-kpi > p:first-of-type {
+  margin-top: 0;
+  max-width: 80%;
+}
+
+.app-shell[data-experience='leader'] .leader-analytics-kpi > p:last-child {
+  font-size: 0.68rem;
+  white-space: normal;
+}
+
+.app-shell[data-experience='leader'] .leader-insights-page > .enterprise-surface:first-of-type {
+  background: linear-gradient(115deg, #fff 40%, #eaf3ff);
+  border-color: #b7d0f5;
+}
+
+.app-shell[data-experience='leader'] .leader-insight-summary > * {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem 0.8rem;
+  align-content: start;
+  box-shadow: none;
+}
+
+.app-shell[data-experience='leader'] .leader-insight-summary > * > span {
+  width: auto;
+  height: auto;
+  background: transparent;
+}
+
+.app-shell[data-experience='leader'] .leader-insight-summary h2 {
+  margin-top: 0;
+}
+
+.app-shell[data-experience='leader'] .leader-insight-summary p {
+  grid-column: 2;
+  margin-top: 0;
+}
+
+.app-shell[data-experience='leader'] .collab-team-page {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 1rem;
+  max-width: 1360px;
+}
+
+.app-shell[data-experience='leader'] .collab-team-page > :is(header, p) {
+  grid-column: 1 / -1;
+}
+
+.app-shell[data-experience='leader'] .collab-team-page > .enterprise-surface {
+  margin-top: 0;
+  height: fit-content;
+}
+
+.app-shell[data-experience='leader']
+  .collab-team-page
+  > .enterprise-surface:first-of-type
+  > div:last-child {
+  flex-direction: column;
+  align-items: flex-start;
+  background: #f3f8ff;
+}
+
+.app-shell[data-experience='leader'] .collab-summary-strip {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--leader-line);
+  border-radius: 16px;
+  background: white;
+}
+
+.app-shell[data-experience='leader'] .collab-summary-strip > * {
+  border: 0;
+  border-left: 1px solid var(--leader-line);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.app-shell[data-experience='leader']
+  .collab-request-detail-page
+  > .enterprise-surface:first-of-type {
+  border-top-color: #9ebff4;
+  background: linear-gradient(115deg, white 65%, #f3f8ff);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .app-shell[data-experience='leader'] .leader-kpi:hover {
+    border-color: #9ebff4;
+  }
+  .app-shell[data-experience='leader'] .leader-primary-link:hover {
+    background: #0f4fbd;
+  }
+}
+
+@media (max-width: 1350px) {
+  .app-shell[data-experience='leader'] .leader-dashboard-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .app-shell[data-experience='leader'] .leader-work-grid,
+  .app-shell[data-experience='leader'] .leader-approvals-grid,
+  .app-shell[data-experience='leader'] .leader-review-evidence {
+    grid-template-columns: 1fr;
+  }
+  .app-shell[data-experience='leader'] .leader-approval-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .app-shell[data-experience='leader'] .leader-approval-summary > * {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .app-shell[data-experience='leader'] .leader-calendar-grid,
+  .app-shell[data-experience='leader'] .leader-review-grid {
+    grid-template-columns: 1fr;
+  }
+  .app-shell[data-experience='leader'] .leader-timeline-panel,
+  .app-shell[data-experience='leader'] .leader-date-detail {
+    position: static;
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .app-shell[data-experience='leader'] .leader-context-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .app-shell[data-experience='leader'] .leader-context-grid > *:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 767px) {
+  .app-shell[data-experience='leader']
+    :is(.leader-page-heading, .collab-page-heading-legacy, .leader-approval-heading)
+    h1 {
+    font-size: 1.65rem;
+  }
+  .app-shell[data-experience='leader'] .leader-dashboard-metrics,
+  .app-shell[data-experience='leader'] .leader-analytics-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .app-shell[data-experience='leader'] .leader-analytics-metrics > *,
+  .app-shell[data-experience='leader'] .leader-analytics-metrics > *:nth-child(n + 5) {
+    grid-column: auto;
+  }
+  .app-shell[data-experience='leader'] .leader-approval-summary,
+  .app-shell[data-experience='leader'] .collab-team-page {
+    grid-template-columns: 1fr;
+  }
+  .app-shell[data-experience='leader'] .leader-object-header > div {
+    grid-template-columns: 1fr 1fr;
+  }
+  .app-shell[data-experience='leader'] .leader-context-grid {
+    grid-template-columns: 1fr;
+  }
+  .app-shell[data-experience='leader'] .leader-calendar-board {
+    padding: 0.75rem;
+  }
+  .app-shell[data-experience='leader'] .leader-calendar-board button[class*='min-h-28'] {
+    min-height: 120px;
+    padding: 0.35rem;
+  }
+  .app-shell[data-experience='leader'] .leader-calendar-board button p {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .app-shell[data-experience='leader'] .leader-decision-bar > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+  .app-shell[data-experience='leader'] .leader-decision-bar button:first-child {
+    grid-column: 1 / -1;
+    margin-right: 0;
+  }
+  .app-shell[data-experience='leader'] .leader-review-page {
+    padding-bottom: 9rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell[data-experience='leader'] *,
+  .app-shell[data-experience='leader'] *::before,
+  .app-shell[data-experience='leader'] *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

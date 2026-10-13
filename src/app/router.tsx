@@ -8,6 +8,22 @@ import { RouteErrorPage } from '@/features/dashboard/pages/RouteErrorPage'
 import { RouteLoadingPage } from '@/features/dashboard/pages/RouteLoadingPage'
 
 const routes: RouteObject[] = [
+  {
+    path: '/sistema-visual/portfolio/aprobaciones/:requestId',
+    lazy: async () => {
+      const { PortfolioPreviewPage } =
+        await import('@/features/portfolio/pages/PortfolioPreviewPage')
+      return { Component: PortfolioPreviewPage }
+    },
+  },
+  {
+    path: '/sistema-visual/portfolio/*',
+    lazy: async () => {
+      const { PortfolioPreviewPage } =
+        await import('@/features/portfolio/pages/PortfolioPreviewPage')
+      return { Component: PortfolioPreviewPage }
+    },
+  },
   { path: '/', element: <Navigate to="/iniciar-sesion" replace /> },
   {
     path: '/sistema-visual',
@@ -194,7 +210,9 @@ const routes: RouteObject[] = [
         },
       },
       {
-        element: <RoleRoute allowedRoles={['COLLABORATOR', 'TEAM_LEADER', 'PORTFOLIO_MANAGER']} />,
+        element: (
+          <RoleRoute allowedRoles={['COLLABORATOR', 'TEAM_LEADER', 'PORTFOLIO_MANAGER', 'ADMIN']} />
+        ),
         children: [
           {
             path: '/panel',
@@ -353,7 +371,7 @@ const routes: RouteObject[] = [
         ],
       },
       {
-        element: <RoleRoute allowedRoles={['PORTFOLIO_MANAGER']} />,
+        element: <RoleRoute allowedRoles={['PORTFOLIO_MANAGER', 'ADMIN']} />,
         children: [
           {
             path: '/equipos',
@@ -381,6 +399,18 @@ const routes: RouteObject[] = [
           },
         ],
       },
+      {
+        element: <RoleRoute allowedRoles={['ADMIN']} />,
+        children: [
+          {
+            path: '/administracion',
+            lazy: async () => {
+              const { AdminPage } = await import('@/features/admin/pages/AdminPage')
+              return { Component: AdminPage }
+            },
+          },
+        ],
+      },
     ],
   },
   {
@@ -392,8 +422,23 @@ const routes: RouteObject[] = [
   },
 ]
 
+// Reuse existing demonstration components in the manager shell. Production guards are unchanged.
+const leaderSharedPreviewRoutes = routes
+  .filter(
+    (route) =>
+      route.path?.startsWith('/sistema-visual/') &&
+      !route.path.startsWith('/sistema-visual/jefe') &&
+      !route.path.startsWith('/sistema-visual/portfolio') &&
+      route.path !== '/sistema-visual/equipos' &&
+      route.path !== '/sistema-visual/calendario',
+  )
+  .map((route) => ({
+    ...route,
+    path: route.path?.replace('/sistema-visual', '/sistema-visual/jefe'),
+  }))
+
 export const router = createBrowserRouter(
-  routes
+  [...routes, ...leaderSharedPreviewRoutes]
     .filter(
       (route) =>
         import.meta.env.DEV ||
