@@ -241,6 +241,7 @@ function mergeTracking(requests: RequestView[], tracking: RequestTrackingRow[]) 
 }
 
 function translateRequestError(message: string) {
+  if (message.startsWith('No puedes reservar viernes consecutivos:')) return message
   const knownErrors = [
     'Debe iniciar sesión',
     'No tiene una membresía de equipo activa',

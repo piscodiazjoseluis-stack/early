@@ -141,7 +141,7 @@ export function NewRequestPage({ preview = false }: { preview?: boolean }) {
   const checks = context?.checks ?? buildPendingChecks(contextQuery.isError)
   const allReady = preview
     ? Boolean(context?.all_ready)
-    : Boolean(context?.all_ready && form.formState.isValid)
+    : Boolean(context?.all_ready && form.formState.isValid && !contextQuery.isFetching)
 
   const mutation = useMutation({
     mutationFn: createRequest,
