@@ -29,6 +29,17 @@ export function ApprovalsPage() {
     location.pathname.startsWith('/sistema-visual/portfolio') ||
     Boolean(access?.roles.includes('PORTFOLIO_MANAGER'))
   const initialStatus: StatusFilter = isPortfolio ? 'PENDING_PORTFOLIO' : 'PENDING_TEAM_LEADER'
+  const displayName = preview
+    ? isPortfolio
+      ? 'María Luisa'
+      : 'Hugo'
+    : access?.profile.full_name?.trim() || 'Usuario'
+  const initials = displayName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
   const [draftSearch, setDraftSearch] = useState('')
   const [draftStatus, setDraftStatus] = useState<StatusFilter>(initialStatus)
   const [draftPriority, setDraftPriority] = useState<PriorityFilter>('ALL')
@@ -76,12 +87,10 @@ export function ApprovalsPage() {
         <div className="min-w-0 space-y-5">
           <div className="leader-approval-heading flex items-center gap-4">
             <span className="grid size-16 place-items-center rounded-full bg-[#efdce8] text-xl font-extrabold text-[#77355f]">
-              {isPortfolio ? 'ML' : 'HR'}
+              {initials}
             </span>
             <div>
-              <h1 className="text-primary text-3xl font-extrabold">
-                Hola, {isPortfolio ? 'María Luisa' : 'Hugo'}
-              </h1>
+              <h1 className="text-primary text-3xl font-extrabold">Hola, {displayName}</h1>
               <p className="text-muted-foreground mt-1">
                 {isPortfolio
                   ? 'Revisa y resuelve las solicitudes que requieren la decisión final del portfolio.'

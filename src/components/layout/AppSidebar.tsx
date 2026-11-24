@@ -154,6 +154,12 @@ const portfolioNavigation = [
     previewPath: '/excepciones-auditoria',
   },
   { label: 'Notificaciones', icon: Bell, path: '/notificaciones', previewPath: '/notificaciones' },
+  {
+    label: 'Administración',
+    icon: ShieldCheck,
+    path: '/administracion',
+    previewPath: '/administracion',
+  },
 ]
 
 const adminNavigation = [

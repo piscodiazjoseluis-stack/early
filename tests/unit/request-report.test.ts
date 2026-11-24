@@ -49,4 +49,30 @@ describe('reporte histórico de solicitudes', () => {
     expect(csv).toContain('"Ana, PMO"')
     expect(csv).toContain('"FINAL_APPROVED"')
   })
+
+  it.each(['=1+1', '+1+1', '-1+1', '@SUM(1)', '\t=1+1', '\r=1+1', '\n=1+1'])(
+    'neutraliza fórmulas de hoja de cálculo en un nombre exportado %j',
+    (name) => {
+      const csv = requestsToCsv([{ ...base, requesterName: name }])
+      expect(csv).toContain(`"'${name}"`)
+    },
+  )
+
+  it('preserva comillas y saltos de línea del texto legítimo', () => {
+    expect(requestsToCsv([{ ...base, requesterName: 'QA "A"\nPrueba' }])).toContain(
+      '"QA ""A""\nPrueba"',
+    )
+  })
+
+  it('incluye ambos límites del periodo y devuelve vacío con intervalo invertido', () => {
+    expect(
+      filterHistoricalRequests([base], {
+        dateFrom: base.requestedDate,
+        dateTo: base.requestedDate,
+      }),
+    ).toEqual([base])
+    expect(
+      filterHistoricalRequests([base], { dateFrom: '2026-10-01', dateTo: '2026-09-01' }),
+    ).toEqual([])
+  })
 })

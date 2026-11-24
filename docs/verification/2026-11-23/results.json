@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "localDate": "2026-11-23",
+  "timezone": "America/Bogota",
+  "purpose": "GitHub synchronization of the previously verified 14-story local source",
+  "check": {
+    "startedAt": "2026-11-24T01:02:44.506Z",
+    "finishedAt": "2026-11-24T01:03:40.276Z",
+    "exitCode": 0,
+    "includes": ["eslint", "TypeScript", "Vitest", "production build"]
+  },
+  "unit": {
+    "startedAt": "2026-11-24T01:03:40.279Z",
+    "finishedAt": "2026-11-24T01:03:52.761Z",
+    "passed": 77,
+    "failed": 0,
+    "files": 21
+  },
+  "visual": {
+    "startedAt": "2026-11-24T01:03:52.761Z",
+    "finishedAt": "2026-11-24T01:05:01.042Z",
+    "startTime": "2026-11-24T01:03:53.625Z",
+    "duration": 67399.224,
+    "expected": 37,
+    "skipped": 1,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "dependencyAudit": {
+    "exitCode": 1,
+    "counts": {
+      "info": 0,
+      "low": 1,
+      "moderate": 9,
+      "high": 6,
+      "critical": 0,
+      "total": 16
+    },
+    "productionCounts": {
+      "info": 0,
+      "low": 1,
+      "moderate": 0,
+      "high": 1,
+      "critical": 0,
+      "total": 2
+    },
+    "productionPackages": [
+      {
+        "name": "dompurify",
+        "severity": "low",
+        "direct": false
+      },
+      {
+        "name": "zod",
+        "severity": "high",
+        "direct": true
+      }
+    ]
+  },
+  "integrationRerun": false,
+  "productionDatabaseModified": false,
+  "productionDeploymentRequested": false,
+  "limitations": [
+    "Auth/API/database integration evidence remains dated 2026-11-09.",
+    "Passing functional checks does not mean npm audit or the full historical GitHub Actions workflow is passing."
+  ]
+}

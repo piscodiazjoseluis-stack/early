@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "localDate": "2026-11-09",
+  "timezone": "America/Bogota",
+  "environment": "Isolated local Supabase QA with synthetic identities and records",
+  "productionWrites": false,
+  "sourceBase": "b5c9e4188224cd834e2af0ed77968edaba45a190",
+  "referenceZipSha256": "b12cbaa6942fb68bdaaf734dd7de92141807fb8260fb88d48d19618fd38bd893",
+  "functionalScope": {
+    "verifiedStories": 14,
+    "totalStories": 14,
+    "percentage": 100,
+    "notACodeCoverageOrProductionCertification": true
+  },
+  "unit": {
+    "passed": 77,
+    "failed": 0,
+    "files": 21
+  },
+  "integration": {
+    "startedAt": "2026-11-10T02:40:27.702Z",
+    "finishedAt": "2026-11-10T02:40:38.399Z",
+    "cases": [
+      {
+        "id": "SEND",
+        "passed": true
+      },
+      {
+        "id": "BLOCK-PENDING-NEXT",
+        "passed": true
+      },
+      {
+        "id": "BLOCK-REVERSE-ORDER",
+        "passed": true
+      },
+      {
+        "id": "FORM-PREFLIGHT",
+        "passed": true
+      },
+      {
+        "id": "ONLY-FRIDAY",
+        "passed": true
+      },
+      {
+        "id": "OWN-APPROVAL-DENIED",
+        "passed": true
+      },
+      {
+        "id": "PORTFOLIO-CANNOT-SKIP-LEADER",
+        "passed": true
+      },
+      {
+        "id": "LEADER-APPROVES",
+        "passed": true
+      },
+      {
+        "id": "BLOCK-AFTER-LEADER",
+        "passed": true
+      },
+      {
+        "id": "FINAL-APPROVES",
+        "passed": true
+      },
+      {
+        "id": "BLOCK-FINAL-WITHOUT-CONFIRMATION",
+        "passed": true
+      },
+      {
+        "id": "PREMATURE-NOT-USED-DENIED",
+        "passed": true
+      },
+      {
+        "id": "TEAM-CAPACITY",
+        "passed": true
+      },
+      {
+        "id": "REJECTION-RELEASES",
+        "passed": true
+      },
+      {
+        "id": "CANCELLATION-RELEASES",
+        "passed": true
+      },
+      {
+        "id": "RETURNED-STILL-BLOCKS",
+        "passed": true
+      },
+      {
+        "id": "RESUBMIT-EXCLUDES-SELF",
+        "passed": true
+      },
+      {
+        "id": "RACE-ADJACENT-CREATE",
+        "passed": true
+      },
+      {
+        "id": "RACE-SAME-TEAM-APPROVAL",
+        "passed": true
+      },
+      {
+        "id": "LEADER-PERSONAL-REQUEST",
+        "passed": true
+      },
+      {
+        "id": "RLS-COLLABORATOR",
+        "passed": true
+      },
+      {
+        "id": "RLS-OUTSIDER",
+        "passed": true
+      },
+      {
+        "id": "NOTIFICATIONS",
+        "passed": true
+      },
+      {
+        "id": "TIMELINE",
+        "passed": true
+      },
+      {
+        "id": "ANALYTICS-RECONCILE",
+        "passed": true
+      },
+      {
+        "id": "NOT-USED-RELEASES",
+        "passed": true
+      },
+      {
+        "id": "USED-REMAINS-BLOCKED",
+        "passed": true
+      },
+      {
+        "id": "FAKE-NOT-USED-DOES-NOT-RELEASE",
+        "passed": true
+      },
+      {
+        "id": "HU01-COMMENT-LIMIT",
+        "passed": true
+      },
+      {
+        "id": "HU09-FILTERS",
+        "passed": true
+      },
+      {
+        "id": "HU13-TEAM-INSIGHT",
+        "passed": true
+      },
+      {
+        "id": "HU14-PORTFOLIO-PEOPLE",
+        "passed": true
+      },
+      {
+        "id": "HU14-COLLABORATOR-DENIED",
+        "passed": true
+      },
+      {
+        "id": "HU14-SETTINGS",
+        "passed": true
+      },
+      {
+        "id": "HU14-ELIGIBILITY",
+        "passed": true
+      }
+    ]
+  },
+  "authenticatedBrowser": {
+    "startedAt": "2026-11-10T03:03:23.201Z",
+    "finishedAt": "2026-11-10T03:04:17.426Z",
+    "cases": [
+      {
+        "id": "LOGIN-a",
+        "passed": true
+      },
+      {
+        "id": "03-formulario",
+        "passed": true
+      },
+      {
+        "id": "04-solicitudes",
+        "passed": true
+      },
+      {
+        "id": "05-detalle",
+        "passed": true
+      },
+      {
+        "id": "06-calendario-personal",
+        "passed": true
+      },
+      {
+        "id": "07-notificaciones",
+        "passed": true
+      },
+      {
+        "id": "18-ayuda",
+        "passed": true
+      },
+      {
+        "id": "COLLABORATOR-DENIED-GLOBAL",
+        "passed": true
+      },
+      {
+        "id": "FORM-THURSDAY",
+        "passed": true
+      },
+      {
+        "id": "NO-PRODUCTION-OR-JS-ERRORS-a",
+        "passed": true
+      },
+      {
+        "id": "LOGOUT-a",
+        "passed": true
+      },
+      {
+        "id": "LOGIN-leader",
+        "passed": true
+      },
+      {
+        "id": "09-aprobaciones",
+        "passed": true
+      },
+      {
+        "id": "10-detalle-aprobacion",
+        "passed": true
+      },
+      {
+        "id": "19-equipo-jefe",
+        "passed": true
+      },
+      {
+        "id": "11-bi-equipo",
+        "passed": true
+      },
+      {
+        "id": "20-analisis-jefe",
+        "passed": true
+      },
+      {
+        "id": "CSV-leader",
+        "passed": true
+      },
+      {
+        "id": "NO-PRODUCTION-OR-JS-ERRORS-leader",
+        "passed": true
+      },
+      {
+        "id": "LOGOUT-leader",
+        "passed": true
+      },
+      {
+        "id": "LOGIN-portfolio",
+        "passed": true
+      },
+      {
+        "id": "13-equipos",
+        "passed": true
+      },
+      {
+        "id": "14-bi-global",
+        "passed": true
+      },
+      {
+        "id": "15-calendario-global",
+        "passed": true
+      },
+      {
+        "id": "16-auditoria",
+        "passed": true
+      },
+      {
+        "id": "17-administracion",
+        "passed": true
+      },
+      {
+        "id": "CSV-portfolio",
+        "passed": true
+      },
+      {
+        "id": "NO-PRODUCTION-OR-JS-ERRORS-portfolio",
+        "passed": true
+      },
+      {
+        "id": "LOGOUT-portfolio",
+        "passed": true
+      }
+    ]
+  },
+  "visual": {
+    "startTime": "2026-11-10T03:07:09.726Z",
+    "duration": 59225.541,
+    "expected": 37,
+    "skipped": 1,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "sqlSecurity": {
+    "passed": [
+      "ok 1 - todas las tablas públicas tienen RLS habilitado",
+      "ok 2 - anon no ejecuta helpers privados de autorización",
+      "ok 3 - authenticated puede evaluar el helper requerido por RLS",
+      "ok 4 - authenticated no invoca directamente el trigger de auditoría",
+      "ok 5 - authenticated no invoca directamente validaciones de trigger",
+      "ok 6 - authenticated conserva el RPC de creación permitido",
+      "ok 7 - authenticated conserva el RPC de aprobación del jefe",
+      "ok 8 - anon no puede ejecutar el RPC de aprobación",
+      "ok 9 - el trigger de alta queda reservado al administrador de Auth",
+      "ok 10 - solo authenticated puede invocar el reporter público",
+      "ok 11 - el reporter expuesto usa security invoker"
+    ],
+    "rolledBack": true
+  },
+  "limitations": [
+    "Historical evidence is not relabelled as a new production test.",
+    "FORM-THURSDAY opens the form route; day rejection is verified separately in unit/database tests.",
+    "The historical SQL workflow fixture requires fixed identities and dates and is not a full clean-database acceptance test.",
+    "Security dependency advisories remain separate from functional coverage."
+  ]
+}

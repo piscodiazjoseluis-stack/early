@@ -13,6 +13,12 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    // Unit/component tests must not depend on a developer's .env.local.
+    // Services are mocked; these non-secret values target loopback only.
+    env: {
+      VITE_SUPABASE_URL: 'http://127.0.0.1:54321',
+      VITE_SUPABASE_PUBLISHABLE_KEY: 'unit-test-placeholder-not-a-real-key',
+    },
     setupFiles: './tests/setup.ts',
     include: ['tests/{unit,integration}/**/*.{test,spec}.{ts,tsx}'],
   },

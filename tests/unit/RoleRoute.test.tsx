@@ -66,14 +66,18 @@ describe('autorización de rutas por rol', () => {
     expect(screen.getByText('Acceso denegado')).toBeInTheDocument()
   })
 
-  it('reserva la administración para el rol ADMIN', () => {
-    currentRoles = ['ADMIN']
-    const { unmount } = renderGuard(['ADMIN'])
+  it('permite administración a Portfolio y la deniega a jefe y colaborador', () => {
+    currentRoles = ['PORTFOLIO_MANAGER']
+    const { unmount } = renderGuard(['PORTFOLIO_MANAGER', 'ADMIN'])
     expect(screen.getByText('Contenido autorizado')).toBeInTheDocument()
     unmount()
 
-    currentRoles = ['PORTFOLIO_MANAGER']
-    renderGuard(['ADMIN'])
+    currentRoles = ['TEAM_LEADER']
+    const denied = renderGuard(['PORTFOLIO_MANAGER', 'ADMIN'])
+    expect(screen.getByText('Acceso denegado')).toBeInTheDocument()
+    denied.unmount()
+    currentRoles = ['COLLABORATOR']
+    renderGuard(['PORTFOLIO_MANAGER', 'ADMIN'])
     expect(screen.getByText('Acceso denegado')).toBeInTheDocument()
   })
 })

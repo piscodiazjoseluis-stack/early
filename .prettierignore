@@ -2,3 +2,11 @@ dist
 coverage
 node_modules
 package-lock.json
+
+# Third-party skill packages and private/generated local artifacts.
+.agents/
+.impeccable/
+qa_capstone_work/
+entregables_capstone_qa/
+evidencias/
+output/

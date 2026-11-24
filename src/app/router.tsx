@@ -400,7 +400,7 @@ const routes: RouteObject[] = [
         ],
       },
       {
-        element: <RoleRoute allowedRoles={['ADMIN']} />,
+        element: <RoleRoute allowedRoles={['PORTFOLIO_MANAGER', 'ADMIN']} />,
         children: [
           {
             path: '/administracion',

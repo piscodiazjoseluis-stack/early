@@ -59,5 +59,7 @@ export function downloadRequestsCsv(requests: TeamApprovalRequest[], fileName: s
 }
 
 function csvCell(value: string) {
-  return `"${value.replaceAll('"', '""')}"`
+  // Quoting alone does not stop Excel from evaluating untrusted cell formulas.
+  const safeValue = /^[=+@\-\t\r\n]/.test(value) ? `'${value}` : value
+  return `"${safeValue.replaceAll('"', '""')}"`
 }

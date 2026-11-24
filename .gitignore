@@ -36,3 +36,10 @@ __pycache__/
 supabase/.temp/
 .env*
 !.env.example
+
+# Local academic evidence, private QA fixtures and generated documents.
+# Publish only reviewed, sanitized records under docs/verification.
+qa_capstone_work/
+entregables_capstone_qa/
+evidencias/
+.impeccable/

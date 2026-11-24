@@ -18,7 +18,7 @@ import {
   type AdminPerson,
 } from '../services/admin-service'
 
-const roles: AppRole[] = ['COLLABORATOR', 'TEAM_LEADER', 'PORTFOLIO_MANAGER', 'ADMIN']
+const roles: AppRole[] = ['COLLABORATOR', 'TEAM_LEADER', 'PORTFOLIO_MANAGER']
 
 export function AdminPage() {
   const navigate = useNavigate()
@@ -38,7 +38,7 @@ export function AdminPage() {
               Administración
             </h1>
             <p className="text-muted-foreground mt-1 text-sm">
-              Personas, roles, equipos y parámetros protegidos por el rol Administrador.
+              Personas, roles, equipos y parámetros gestionados por Portfolio Manager.
             </p>
           </div>
           <Button onClick={() => void navigate('/equipos')}>
@@ -53,7 +53,7 @@ export function AdminPage() {
             value={workspace.data?.settings.length ?? 0}
             icon={<Settings2 />}
           />
-          <Summary label="Control de acceso" value="ADMIN" icon={<ShieldCheck />} />
+          <Summary label="Control de acceso" value="Portfolio" icon={<ShieldCheck />} />
         </section>
 
         {workspace.error ? (

@@ -21,7 +21,7 @@ export async function getAdminWorkspace() {
   const [peopleResult, settingsResult] = await Promise.all([
     supabase
       .from('profiles')
-      .select('*, user_roles(valid_until, role:roles(code))')
+      .select('*, user_roles!user_roles_user_id_fkey(valid_until, role:roles(code))')
       .is('deleted_at', null)
       .order('full_name'),
     supabase.from('system_settings').select('*').order('key'),
